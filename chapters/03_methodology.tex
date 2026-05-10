@@ -1,0 +1,56 @@
+\chapter{Methodology}
+\label{chap:methodology}
+
+% DRAFT NOTES (delete before submission):
+% Pipeline overview figure goes here
+% Five stages: parse → score → extract → generate → experiment
+% Step 2: Gemini annotation of risky_ratio from comment upvotes
+% Step 5: forced-choice baseline (all 620 posts × 4 models × 10 samples)
+% Step 6: Direction 1 verbalized sampling (150 ambiguous posts)
+% Step 7: Direction 2 framing (620 posts × oracle + personal)
+
+\section{Dataset construction}
+\label{sec:data_construction}
+
+\subsection{Source and filtering}
+\label{sec:source}
+
+% 5 subreddit domains: education, career, finance, health, social
+% Trigger phrases, min word count, min comments
+
+\subsection{Human preference distribution}
+\label{sec:human_dist}
+
+% risky_ratio from comment upvote weights, Gemini annotation
+% min_classifiable_weight filter → 620 posts
+
+\subsection{Study models}
+\label{sec:models}
+
+% gpt-5, claude-sonnet-4-6, mistral-large-2411, llama-4-maverick
+% OpenRouter routing, temperature 0.7, N=10 samples
+
+\section{Baseline experiment (Step 5)}
+\label{sec:step5}
+
+% Advisor framing, forced choice, abs_gap metric
+
+\section{Direction 1: verbalized sampling (Step 6)}
+\label{sec:step6}
+
+% Conditions: baseline (reused), VS, DV, HighT
+% Post selection: 150 most ambiguous (risky_ratio ∈ [0.35, 0.65])
+% Entropy recovery as primary metric
+
+\section{Direction 2: role framing (Step 7)}
+\label{sec:step7}
+
+% Three framings: advisor (reused), oracle, personal
+% All 620 posts, same N=10, T=0.7
+
+\section{Statistical analysis}
+\label{sec:stats}
+
+% Paired bootstrap n=10000, seed=42
+% BH FDR correction across 11 comparisons
+% Mann-Whitney U for domain and trade-off type effects

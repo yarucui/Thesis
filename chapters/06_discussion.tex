@@ -1,0 +1,37 @@
+\chapter{Discussion}
+\label{chap:discussion}
+
+% DRAFT NOTES (delete before submission):
+% Central argument: decompose what "alignment gap" is attributable to
+% 2x2 mechanism map: role (prescriptive/descriptive) × output (single-token/distribution)
+
+\section{A mechanism map of the alignment gap}
+\label{sec:mechanism_map}
+
+%                    | Single-token output | Distribution output
+% Prescriptive role  | Baseline (step5)    | Direction 1 (VS/DV)
+% Descriptive role   | Direction 2         | Direction 1 (HighT comparison)
+%
+% Key finding: output format is the dominant axis (Δ~0.23);
+%              role framing is a detectable but minor axis (Δ~0.01-0.03)
+
+\section{Implications for alignment evaluation}
+\label{sec:implications}
+
+% Existing benchmarks mostly use forced-choice → overestimate alignment gap
+% Verbalized sampling as a methodological recommendation
+
+\section{Limitations}
+\label{sec:limitations}
+
+% Reddit ground truth: upvote-based risky_ratio may not reflect true preferences
+% Model version instability: provider models can change silently
+% Parse failures: ~2% for Claude personal (safety refusals on sensitive posts)
+% Health/social domain underpowered in D2
+
+\section{Future work}
+\label{sec:future_work}
+
+% Extend to more domains; larger N per cell
+% Human annotation study to validate risky_ratio
+% Test with open-weight models for reproducibility

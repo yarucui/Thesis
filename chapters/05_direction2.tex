@@ -1,0 +1,46 @@
+\chapter{Direction 2: role framing has small but significant effects}
+\label{chap:direction2}
+
+% DRAFT NOTES (delete before submission):
+% Headline: all three framing comparisons significant after FDR, but Δ ≈ 0.01-0.03
+%           vs. Δ ≈ 0.23 for output format
+% Ordering: oracle < advisor < personal (oracle closest to human)
+% Figure: abs_gap by framing × model (grouped bars or violin)
+% Cross-domain: health posts closer to human (Δ = -0.182, p_fdr = 0.005)
+% Cross-trade-off: short_term_vs_long_term vs agg_vs_cons (Δ = -0.540, p_fdr < 0.001)
+
+\section{Framing effects on alignment gap}
+\label{sec:framing_effects}
+
+% oracle vs advisor: Δ = -0.015, p_fdr = 0.005 **
+% oracle vs personal: Δ = -0.026, p_fdr < 0.001 ***
+% advisor vs personal: Δ = -0.012, p_fdr = 0.005 **
+
+\section{Effect size in context}
+\label{sec:framing_effect_size}
+
+% Compare to D1 format effect: framing is ~6-11x smaller
+% Practical significance vs. statistical significance
+
+\section{Model-specific framing sensitivity}
+\label{sec:framing_models}
+
+% Which models are most sensitive to framing?
+% mistral shows largest oracle-personal gap
+
+\section{Domain moderation}
+\label{sec:domain}
+
+% Health vs. other: Δ = -0.182, p_fdr = 0.005 (smaller gap on health posts)
+% Caveat: health n=48 rows, underpowered
+
+\section{Trade-off type moderation}
+\label{sec:tradeoff}
+
+% short_term_vs_long_term vs aggressive_vs_conservative: Δ = -0.540, p_fdr < 0.001
+% LLMs more aligned with humans on short-term/long-term trade-offs
+
+\section{Summary}
+\label{sec:d2_summary}
+
+% Framing matters but effect is small; task structure matters more

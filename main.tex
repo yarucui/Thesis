@@ -1,0 +1,53 @@
+\documentclass[12pt, oneside]{report}
+
+% ---------------------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{natbib}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{csquotes}
+
+% ---------------------------------------------------------------------------
+% Metadata
+% ---------------------------------------------------------------------------
+\title{Misattributed Alignment: How Output Format and Task Structure Drive\\
+       LLM-Human Decision Divergence}
+\author{Yaru Cui}
+\date{2026}
+
+% ---------------------------------------------------------------------------
+% Main document
+% ---------------------------------------------------------------------------
+\begin{document}
+
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+
+% chapters — only edit this list, never content in this file
+\input{chapters/01_introduction}
+\input{chapters/02_related_work}
+\input{chapters/03_methodology}
+\input{chapters/04_direction1}
+\input{chapters/05_direction2}
+\input{chapters/06_discussion}
+\input{chapters/07_conclusion}
+
+\bibliographystyle{apalike}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,36 @@
+\chapter{Direction 1: output format drives the alignment gap}
+\label{chap:direction1}
+
+% DRAFT NOTES (delete before submission):
+% Headline: VS recovers 94-101% of human entropy across all 4 models
+% Interpretation: the gap seen in step5 is a decoding artifact, not a belief artifact
+% Figure: entropy per condition per model (4-panel or grouped bar)
+% Table: mean abs_gap and entropy per condition (all models pooled)
+
+\section{Entropy collapse in forced-choice decoding}
+\label{sec:entropy_collapse}
+
+% Baseline results: near-zero entropy despite ~0.5 human risky_ratio
+
+\section{Verbalized sampling restores entropy}
+\label{sec:vs_recovery}
+
+% VS vs baseline: Δ = -0.235, p_fdr < 0.001
+% DV vs baseline: Δ = -0.212, p_fdr < 0.001
+
+\section{Temperature as a secondary mechanism}
+\label{sec:temperature}
+
+% HighT vs baseline: Δ = -0.016, p_fdr = 0.004 (significant but small)
+% VS vs HighT: Δ = -0.220 (format dominates temperature)
+
+\section{Model heterogeneity}
+\label{sec:d1_models}
+
+% Per-model breakdown; any model-specific patterns?
+
+\section{Summary}
+\label{sec:d1_summary}
+
+% Entropy collapse is decoding-driven, not belief-driven
+% Implication for how we interpret step5 / advisor baseline
