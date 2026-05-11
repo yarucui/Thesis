@@ -1,30 +1,144 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-% DRAFT NOTES (delete before submission):
-% Hook: the misattribution problem — researchers worry about framing but it's tiny
-% Gap in literature: nobody has decomposed the alignment gap into mechanism components
-% Contribution: pipeline, two experiments, significance tests
-% Road map paragraph at end
-
 \section{Motivation}
 \label{sec:motivation}
 
-% TODO: draft
+Large language models are increasingly deployed as personal-decision
+advisors, yet little is known about whether the advice they give
+reflects the diversity of views that real human communities express on
+the same decisions. Conversational assistants now field hundreds of
+millions of weekly queries, and a growing share of those queries ask
+for guidance on consequential personal choices rather than for
+factual lookup or code completion \citep{chatterji-2025-chatgpt,
+tamkin-2024-clio}. Education, career, and finance decisions are the
+canonical example: they are high-stakes, they shape life trajectories,
+and they are often genuinely contested. People ask peers, forums, and
+now language models precisely because there is no single right answer.
 
-\section{Research questions}
-\label{sec:rq}
+When a community of informed humans is split roughly evenly on whether
+to take a job offer or change a major, an aligned advisor should
+reflect that split rather than collapse to one side. The empirical
+record, however, points the other way. Recent work on moral judgment
+shows that frontier models converge on a single answer where humans
+disagree, even when prompts are identical and the underlying question
+admits multiple defensible positions \citep{russo-2026-pluralistic}.
+Whether the same collapse occurs on personal-decision advice, and
+whether it can be diagnosed and reversed, is the question this thesis
+takes up.
 
-% TODO: draft
-% RQ1: Does output format (forced-choice vs. verbalized sampling) account for the alignment gap?
-% RQ2: Does role framing (advisor vs. oracle vs. personal) modulate the gap?
+\section{The puzzle}
+\label{sec:puzzle}
 
-\section{Contributions}
+Across four state-of-the-art language models and 132 ambiguous Reddit
+decision posts, the average LLM entropy on a forced binary choice was
+0.046 nats, compared to a Reddit community entropy of 0.621 nats --- a
+13$\times$ gap. When the upvote-weighted distribution of comments was
+near 50/50, the models still answered close to 100/0. The gap is not a
+small drift in calibration; it is a structural difference in
+distributional shape.
+
+The puzzle is mechanism. Two explanations are observationally similar
+in the standard setup but have opposite deployment consequences. The
+first is \emph{belief collapse}: the model's internal posterior over
+options is genuinely narrow, in which case alignment requires
+retraining or new preference data \citep{kirk-2024-rlhf-diversity}.
+The second is \emph{decoding collapse}: the internal posterior is
+broad, but a forced single-token answer interface discards everything
+except the mode \citep{zhang-2025-verbalized-sampling}. The first is a
+training-level problem and is expensive to fix; the second is a
+deployment-level problem and is fixable with a prompt change. Standard
+benchmarks elicit a forced choice and so cannot tell the two apart.
+
+A parallel literature attributes the gap to role framing: models cast
+as advisors are said to behave more prescriptively than models cast as
+neutral describers \citep{russo-2026-pluralistic}. If true at scale,
+this would be a third mechanism, intermediate in cost between training
+and prompting. Whether output format and role framing are equally
+important, or whether one dominates the other, has not been measured
+on personal-decision data.
+
+\section{What this thesis contributes}
 \label{sec:contributions}
 
-% TODO: draft
+We demonstrate that LLM choice collapse on personal decisions is
+decoding-driven rather than belief-driven, and that role framing ---
+though statistically detectable --- is 16 times weaker than output
+format as a lever for pluralism. The contributions are four.
 
-\section{Thesis outline}
-\label{sec:outline}
+First, we release the first personal-decision alignment dataset built
+for this purpose: 811 real Reddit posts spanning education, career,
+and finance, all posted after the knowledge cutoff of every model we
+evaluate, with full comment-level stance distributions preserved as
+the alignment target. Posting-after-cutoff eliminates training
+contamination as a confound, which prior personal-advice work has not
+ruled out \citep{sachdeva-2025-aita}.
 
-% TODO: one sentence per chapter
+Second, we provide direct mechanism evidence. Switching the output
+format from forced choice to verbalized sampling, while holding the
+prompt and temperature otherwise constant, recovers 94--101\% of the
+entropy gap across the 4 models tested. A model that recovers
+near-human entropy under a different decoding interface cannot have a
+collapsed internal belief about the question
+\citep{zhang-2025-verbalized-sampling}.
+
+Third, we rank the two interface mechanisms against each other.
+Output format reduces the absolute alignment gap by 0.235 (Cohen's $d
+\approx 1.6$); role framing reduces it by 0.015 ($d \approx 0.04$).
+The ratio is roughly 16$\times$. The contrast itself is the finding:
+the mechanism that the alignment-on-advice literature has emphasized
+is the smaller of the two by an order of magnitude.
+
+Fourth, the result is a deployment recommendation. A prompt-only
+intervention recovers near-human pluralism on this benchmark without
+any model retraining, fine-tuning, or preference data
+\citep{russo-2026-pluralistic}. Whether this generalizes beyond the
+personal-decision domain is left to future work; within the domain,
+the practical implication is that the existing fleet of frontier
+models already encodes the diversity that aligned advice requires, and
+the deployment surface is what discards it.
+
+\section{Thesis statement and research questions}
+\label{sec:rqs}
+
+\begin{quote}
+LLM advice on personal decisions exhibits a pluralistic gap that is
+structural and decoding-driven, not stimulus-driven or belief-driven.
+The gap is a deployment-level problem, not a training-level problem,
+and is recoverable through interface design.
+\end{quote}
+
+\noindent We address this through three research questions.
+
+\begin{enumerate}
+  \item \textbf{RQ1.} To what extent do LLM choice distributions on
+        personal decisions diverge from the human community choice
+        distributions on the same posts, in mean and in distributional
+        shape?
+  \item \textbf{RQ2.} Is the divergence decoding-driven (recoverable
+        by altering output format) or belief-driven (requiring
+        retraining)?
+  \item \textbf{RQ3.} Is the divergence role-induced (recoverable by
+        shifting from prescriptive advisor framing to descriptive
+        oracle framing)?
+\end{enumerate}
+
+\section{Thesis structure}
+\label{sec:structure}
+
+\Cref{chap:related_work} reviews the literature on RLHF-induced mode
+collapse, pluralistic alignment, and decoding-time diversity, locating
+the gap that this thesis fills \citep{ouyang-2022-instructgpt,
+bai-2022-constitutional}. \Cref{chap:methodology} describes the data
+pipeline, the four-model evaluation grid, and the verbalized-sampling
+protocol that operationalizes RQ2 and RQ3. \Cref{chap:direction1}
+presents the Direction 1 results: forced choice versus verbalized
+sampling across 132 ambiguous posts, addressing RQ1 and RQ2.
+\Cref{chap:direction2} presents the Direction 2 results: advisor
+versus oracle versus personal framing across 811 posts, addressing
+RQ3. \Cref{chap:discussion} interprets the 16$\times$ mechanism ratio
+and discusses why content-level moderators (reversibility, time
+horizon, socioeconomic context) show null effects in the
+mixed-effects regression. \Cref{chap:conclusion} states deployment
+recommendations and the limits of generalization beyond the
+personal-decision domain.
