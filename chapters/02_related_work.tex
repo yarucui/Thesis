@@ -1,21 +1,211 @@
 \chapter{Related work}
 \label{chap:related_work}
 
-% DRAFT NOTES (delete before submission):
-% 3 clusters: (1) LLM alignment measurement, (2) framing effects in AI,
-%             (3) human decision-making datasets and Reddit as ground truth
+This thesis sits at the intersection of four lines of prior work:
+deployment-side studies of LLMs as advice systems, pluralistic
+alignment, RLHF-induced diversity loss and its decoding-time
+remedies, and prompt-framing sensitivity. \Cref{sec:advisors,
+sec:pluralistic,sec:rlhf-vs,sec:framing} review each line and locate
+the specific gap that the thesis fills; \cref{sec:reddit-baseline}
+discusses Reddit as a community-baseline source; \cref{sec:synthesis}
+synthesizes the four gaps and ties them to RQ1--RQ3.
 
-\section{LLM alignment and value alignment}
-\label{sec:rw_alignment}
+\section{LLMs as decision advisors}
+\label{sec:advisors}
 
-% TODO
+Large language models are now widely used as advice systems for
+high-stakes personal decisions, yet evaluation of their advice has
+lagged behind their deployment. Usage logs show that conversational
+assistants field a large and growing share of advice-seeking queries
+on career, education, and personal-finance topics
+\citep{chatterji-2025-chatgpt, tamkin-2024-clio}. Anthropic's Clio
+analysis classified millions of Claude conversations and found that
+guidance and advice tasks form a top-tier cluster, distinct from
+coding and information lookup \citep{tamkin-2024-clio}. Subsequent
+economic-task analyses corroborate this pattern at scale and across
+labour-market categories \citep{handa-2025-economic-tasks}.
 
-\section{Framing effects in language model outputs}
-\label{sec:rw_framing}
+Evaluation work has begun to catch up but remains narrow. The closest
+comparable benchmark is \citet{kumar-2026-when-ai-gives}, who
+compared LLM and human responses on well-being posts and found
+systematic differences in tone, advice content, and recommendation
+diversity. \citet{cahyono-2025-life-changing} probed LLMs on
+life-changing decisions but used a small synthetic stimulus set and
+did not preserve a community-level human distribution. Across this
+line of work the unit of comparison is typically a single
+``ground-truth'' answer or a panel of expert annotators, not the
+natural distribution of opinions that arises in a real online
+community.
 
-% TODO
+\textbf{Gap:} no existing benchmark pairs a large set of real
+personal-decision posts with the full upvote-weighted comment
+distribution that an aligned advisor should ideally reflect.
 
-\section{Crowdsourced decision corpora}
-\label{sec:rw_corpora}
+\section{Pluralistic alignment and the moral gap}
+\label{sec:pluralistic}
 
-% TODO — Reddit as a naturalistic advice corpus; prior work on r/personalfinance etc.
+\citet{russo-2026-pluralistic} introduced the concept of a
+pluralistic moral gap: LLMs match human distributions on consensus
+dilemmas but collapse to majority answers on ambiguous ones. Their
+Moral Dilemma Distributions (MDD) dataset paired AITA-style scenarios
+with fine-grained human verdict distributions, and their
+distributional alignment task scored models on JS divergence rather
+than top-1 accuracy. They then proposed a Distributional Moral
+Probing (DMP) intervention and reported that the model--human gap
+was substantially larger on ambiguous than on consensus items
+\todo{verify exact numbers from Russo Figure 2: gap of $\approx 0.18$
+on high-consensus and $\approx 0.30$ on ambiguous AITA dilemmas}.
+
+The methodological precedent for using Reddit comment label rates as
+a community baseline is \citet{sachdeva-2025-aita}, who showed that
+upvote-weighted YTA / NTA labels in r/AmItheAsshole produce stable,
+reproducible community distributions across thousands of dilemmas
+and serve as a credible target for distributional alignment. The
+broader pluralistic-alignment programme generalizes the same
+intuition beyond moral judgment:
+\citet{sorensen-2024-value-kaleidoscope} mapped plural human values
+onto a structured kaleidoscope of rights and duties, and
+\citet{sorensen-2024-roadmap} laid out a research agenda for
+distributional, steerable, and overton-pluralistic models.
+
+This line of work establishes that the gap exists and that it is
+measurable at the distribution level, but it stops short of two
+things. The stimulus is moral judgment (AITA), which is structurally
+different from open-ended decision advice: the answer space is
+fixed, the verdicts are categorical, and the question being asked is
+about blame rather than about what the protagonist should do. And
+the mechanism behind the collapse is not decomposed --- the gap is
+documented but not attributed to belief, decoding, or framing.
+
+\textbf{Gap:} the pluralistic-alignment literature is bounded to
+moral judgment and does not separate decoding-driven from
+belief-driven collapse.
+
+\section{RLHF, mode collapse, and verbalized sampling}
+\label{sec:rlhf-vs}
+
+Reinforcement learning from human feedback compresses output
+diversity, producing modal outputs that are detectable across
+generation tasks. Instruction-tuned models trained with RLHF
+\citep{ouyang-2022-instructgpt} and constitutional AI
+\citep{bai-2022-constitutional} are reliably more peaked than their
+base counterparts on the same prompts.
+\citet{kirk-2024-rlhf-diversity} measured this across a battery of
+generation tasks and found a consistent reduction in lexical and
+semantic diversity post-RLHF, and \citet{padmakumar-2024-diversity}
+extended the observation to human-AI co-writing, where collaborating
+with an RLHF model demonstrably narrowed the writer's own output
+distribution.
+
+A theoretical account is emerging. \citet{chung-2025-soft-preference}
+argued that the combination of the KL regularizer in PPO and a
+typicality bias in the preference data drives the optimum towards
+modal completions, and that the loss of mass on minority but
+admissible answers is a property of the objective rather than of any
+specific dataset.
+
+The most direct decoding-time remedy is verbalized sampling.
+\citet{zhang-2025-verbalized-sampling} asked models to output a
+distribution over candidate answers in a single forward pass --- for
+example, ``produce 5 answers and their probabilities'' --- and
+recovered the diversity lost to RLHF \todo{verify Zhang et al.
+headline number: 2--3$\times$ diversity gain on creative writing,
+jokes, donation amounts, and US-state enumeration}. The technique
+was validated on creative writing, joke generation, donation
+amounts, and US-state enumeration, but never on advice tasks or on
+forced-choice decision settings where the answer space is binary or
+small and the goal is calibrated probability rather than novelty.
+
+\textbf{Gap:} verbalized sampling has not been tested on advice or
+on forced-choice decisions, leaving open whether the same
+decoding-time fix transfers to settings where alignment, rather
+than creativity, is the target.
+
+\section{Sycophancy, framing, and prompt sensitivity}
+\label{sec:framing}
+
+LLM outputs depend systematically on how questions are framed,
+raising the question of whether the alignment gap is also
+framing-induced. \citet{cheng-2026-elephant} introduced ELEPHANT, a
+benchmark that distinguishes social sycophancy --- face-preserving
+agreement and emotional validation --- from propositional
+sycophancy, and showed that frontier models exhibit social
+sycophancy in open-ended advice even when their underlying judgments
+stay stable. \citet{fanous-2025-syceval} reported that propositional
+sycophancy also persists at high rates: 78.5\% of models maintained
+an incorrect answer after a confident user rebuttal in their setup.
+
+Beyond agreement, models are sensitive to surface framing of the
+question itself. \citet{vannuenen-2026-fragility} found that 24.3\%
+of AITA verdicts flip when the point of view of the narrator is
+changed without altering the underlying facts of the dilemma, and
+\citet{pezeshkpour-2024-position-bias} documented strong position
+biases in multiple-choice tasks where simply reordering the answer
+options changes which one the model picks.
+
+These findings motivate the role-framing question of the present
+thesis: if the alignment gap collapses under a different
+output-format prompt, does it also collapse under a different role
+frame? Prior work in this line is bounded to moral judgment or
+synthetic MCQ benchmarks and has not measured framing effects in
+personal-decision forced-choice tasks.
+
+\textbf{Gap:} no prior work has tested advisor versus oracle versus
+personal framing on personal-decision forced-choice tasks, so the
+size of the framing effect relative to the output-format effect is
+unknown.
+
+\section{Reddit as a source of human community baselines}
+\label{sec:reddit-baseline}
+
+Reddit comment distributions provide an upvote-weighted
+operationalization of community consensus that scales to thousands
+of decisions but reflects the views of vocal commenters rather than
+the general public. The methodological case for treating
+upvote-weighted labels as a community signal is made by
+\citet{sachdeva-2025-aita}, and the data infrastructure for working
+at scale --- monthly dumps, deletion-respecting archives, and
+standardized fields --- comes from the Pushshift project
+\citep{baumgartner-2020-pushshift}.
+
+The limitation is selection. Vocal commenters in r/personalfinance
+skew toward FIRE-style ideology; r/cscareerquestions skews toward
+high-cost-of-living tech labour markets; r/college skews toward
+US-centric four-year-degree narratives. Throughout this thesis we
+therefore call the baseline ``Reddit community consensus'' or
+``upvote-weighted comment distribution'', never ``human consensus''
+in isolation. Training contamination is a separate concern,
+mitigated here by restricting the corpus to posts written after the
+knowledge cutoff of every model evaluated.
+
+A practical observation: most Reddit-LLM studies to date use
+r/AmItheAsshole exclusively
+\citep{russo-2026-pluralistic, sachdeva-2025-aita,
+vannuenen-2026-fragility}. Personal-decision subreddits in
+education, career, and finance --- where the question is what the
+protagonist should \emph{do} rather than who is at \emph{fault} ---
+are effectively unstudied.
+
+\textbf{Gap:} the methodology of upvote-weighted Reddit baselines is
+established for moral judgment but has not been ported to
+personal-decision forums, where the answer space and the rhetorical
+function of comments are different.
+
+\section{Synthesis}
+\label{sec:synthesis}
+
+The four lines above leave four distinct gaps. The advice-evaluation
+literature lacks a large real-Reddit personal-decision dataset with
+preserved human distributions; the pluralistic-alignment literature
+documents the gap but does not decompose its mechanism and is
+bounded to moral judgment; the RLHF-diversity literature offers a
+decoding-time remedy that has not been tested on advice or on
+forced-choice settings; and the framing-sensitivity literature has
+not measured role-frame effects in personal-decision tasks. RQ1
+addresses the first gap by quantifying the divergence on a 132-post
+ambiguous-decision benchmark, RQ2 addresses the second and third
+gaps jointly by testing whether verbalized sampling closes the
+divergence (a positive result rules out belief-driven collapse), and
+RQ3 addresses the fourth gap by measuring the size of the
+advisor-versus-oracle framing effect against the output-format
+effect on the same posts.
