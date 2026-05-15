@@ -1,56 +1,575 @@
 \chapter{Methodology}
 \label{chap:methodology}
 
-% DRAFT NOTES (delete before submission):
-% Pipeline overview figure goes here
-% Five stages: parse → score → extract → generate → experiment
-% Step 2: Gemini annotation of risky_ratio from comment upvotes
-% Step 5: forced-choice baseline (all 620 posts × 4 models × 10 samples)
-% Step 6: Direction 1 verbalized sampling (150 ambiguous posts)
-% Step 7: Direction 2 framing (620 posts × oracle + personal)
+%% -----------------------------------------------------------------------
+\section{Design overview}
+\label{sec:m_design}
 
-\section{Dataset construction}
-\label{sec:data_construction}
+Our design combines a large naturalistic corpus of personal-decision
+posts with a tightly controlled three-experiment battery: a baseline
+distributional alignment measurement, a verbalized-sampling diagnostic,
+and a role-framing manipulation. Four design choices follow from the
+research questions.
 
-\subsection{Source and filtering}
-\label{sec:source}
+\textit{Natural ground truth.} The human reference is the upvote-weighted
+distribution of top-level comments on each post, an operationalisation
+adopted from comparable work on moral-judgment alignment
+\citep{sachdeva-2025-aita}. The reference is community consensus among
+vocal commenters on a given subreddit, not a sample of the general
+population; we treat this distinction explicitly throughout
+(\cref{sec:m_corpus_characteristics}) and revisit its implications in
+\cref{chap:discussion}.
 
-% 5 subreddit domains: education, career, finance, health, social
-% Trigger phrases, min word count, min comments
+\textit{Distributional alignment outcome.} We operationalise alignment
+as the distance between the LLM's choice distribution and the human
+reference distribution, not as agreement with a modal answer
+\citep{russo-2026-pluralistic}. Three complementary metrics —
+position distance, entropy gap, and KL divergence — are defined in
+\cref{sec:m_outcomes}.
 
-\subsection{Human preference distribution}
-\label{sec:human_dist}
+\textit{Cross-model design.} Four post-trained LLMs from four
+developers (OpenAI, Anthropic, Mistral, Meta) test whether findings
+generalise across post-training paradigms rather than reflect a
+property of any single pipeline. Model identifiers appear in
+\cref{sec:m_models}.
 
-% risky_ratio from comment upvote weights, Gemini annotation
-% min_classifiable_weight filter → 620 posts
+\textit{Mechanism manipulations.} Two prompt-level manipulations —
+output format (Direction 1) and epistemic role (Direction 2) — vary
+independently against the same baseline, isolating two candidate
+mechanisms of the alignment gap.
+
+What we did not do is equally relevant to interpretation. No model was
+fine-tuned; all manipulations are prompt-only. No synthetic dilemmas
+were constructed; every post is a real Reddit submission. The baseline
+corpus was not pre-selected for ambiguity. Direction 1 restricts to
+the ambiguous subset post hoc; the baseline (\cref{sec:d1_baseline})
+and Direction 2 (\cref{sec:d2_method}) use the full corpus.
+
+The remainder of the chapter is structured as follows.
+\Cref{sec:m_corpus} describes the personal-decision corpus and its
+construction pipeline. \Cref{sec:m_annotation} documents the two-call
+Gemini annotation pipeline and the manual validation protocol.
+\Cref{sec:m_experiments} specifies each of the three LLM experiments.
+\Cref{sec:m_outcomes} defines the outcome variables. \Cref{sec:m_stats}
+gives the statistical inference procedure.
+
+%% -----------------------------------------------------------------------
+\section{The personal-decision corpus}
+\label{sec:m_corpus}
+
+\subsection{Source: Pushshift Reddit archives}
+\label{sec:m_source}
+
+The corpus was constructed from publicly archived Reddit submissions in
+the 2026-03 monthly Pushshift dump \citep{baumgartner-2020-pushshift}.
+The sampling frame was 17 subreddits drawn from three primary decision
+domains plus a small set of adjacent advice-seeking communities. The
+three primary domains and their 14 dedicated subreddits are:
+
+\begin{itemize}
+\item \textbf{Education} (5 subreddits): r/ApplyingToCollege,
+      r/StudentLoans, r/college, r/GradSchool, r/TransferStudents.
+\item \textbf{Career} (5 subreddits): r/careerguidance,
+      r/careeradvice, r/cscareerquestions, r/jobs, r/findapath.
+\item \textbf{Finance} (4 subreddits): r/personalfinance,
+      r/povertyfinance, r/investing, r/FinancialPlanning.
+\end{itemize}
+
+Three additional advice-seeking subreddits (r/Advice, r/ChronicPain,
+r/relationship\_advice) contributed 15 posts in total through trigger-
+phrase matches in adjacent advice content; these are retained in the
+corpus but are not analytically central. \Cref{tab:m_subreddits} lists
+all 17 subreddits and their post counts in the final corpus.
+
+All four study models have knowledge cutoffs no later than 2025-08
+(Claude Sonnet 4.6 being the most recent). Because every post in the
+corpus was submitted in 2026-03, post-training contamination — the
+concern that an LLM has memorised comment distributions from its
+training data — is ruled out by construction. This is a stronger
+guarantee than the post-cutoff filters used in comparable moral-
+judgment benchmarks \citep{russo-2026-pluralistic}, which rely on
+filter-then-retrain heuristics rather than a hard chronological gap
+between model training and corpus collection.
+
+\subsection{Filtering criteria}
+\label{sec:m_filtering}
+
+Three filters retained only decision-oriented self-posts with
+sufficient community engagement. Posts had to be self-posts
+(\texttt{is\_self} = true), excluding link-only posts; selftext had to
+contain at least 30 words, excluding one-line posts that lacked enough
+context for the Gemini annotator to extract decision structure; and the
+post had to have at least 15 top-level comments, ensuring a meaningful
+upvote-weighted distribution could be computed. Posts also had to
+contain at least one decision trigger phrase from a fixed regex list of
+16 patterns including ``should i'', ``deciding between'',
+``torn between'', ``help me decide'', and ``thinking about whether''
+(full list in Appendix~A.1; the canonical reference is the
+\texttt{TRIGGER\_PHRASES} list in \texttt{config.py}).
+
+The pipeline yield by stage was:
+
+\begin{itemize}
+\item Raw Pushshift dump (2026-03): $\sim$45M submissions across all
+      subreddits.
+\item After subreddit, self-post, $\geq 30$-word, $\geq 15$-comment,
+      and trigger-phrase filters: 1,562 candidate posts.
+\item After Gemini Call A (genuine binary decision gate,
+      \cref{sec:m_callA}): 811 posts.
+\item After Gemini Call B (stance, features, SES,
+      \cref{sec:m_callB}) and Step 2b field validation: \textbf{620
+      posts}.
+\end{itemize}
+
+\begin{figure}[t]
+  \centering
+  \todo{fig 3.1: corpus construction funnel diagram (raw Pushshift dump
+    $\sim$45M $\to$ 1{,}562 after structural filter $\to$ 811 after
+    Gemini Call A decision gate $\to$ 620 after Gemini Call B and Step
+    2b validation). Bars or numbered boxes; show attrition at each
+    stage.}
+  \caption{Corpus construction pipeline. Each stage applies a
+    progressively stricter filter; the final analytical corpus contains
+    620 posts.}
+  \label{fig:m_pipeline}
+\end{figure}
+
+\subsection{Corpus characteristics}
+\label{sec:m_corpus_characteristics}
+
+The final corpus comprises 620 posts spanning the three primary
+decision domains and 17 subreddits. Domain composition is unbalanced:
+finance contributes 287 posts (46.3\%), career 235 (37.9\%), education
+83 (13.4\%), and the three auxiliary subreddits 15 (2.4\%).
+\Cref{tab:m_subreddits} reports the per-subreddit counts. Median post
+length is 179 words and median top-level comment count is 39.
+
+\begin{table}[t]
+  \centering
+  \caption{Subreddit composition of the final corpus. Three auxiliary
+    subreddits contributed small samples through trigger-phrase matches
+    in adjacent advice content; they are retained in the corpus but
+    are not part of the three primary analytical domains.}
+  \label{tab:m_subreddits}
+  \begin{tabular}{llr}
+    \toprule
+    Domain & Subreddit & Posts \\
+    \midrule
+    Education & r/ApplyingToCollege  & 45  \\
+              & r/StudentLoans       & 21  \\
+              & r/GradSchool         & 11  \\
+              & r/college            & 4   \\
+              & r/TransferStudents   & 2   \\
+    \midrule
+    Career    & r/careerguidance     & 87  \\
+              & r/careeradvice       & 57  \\
+              & r/jobs               & 49  \\
+              & r/cscareerquestions  & 28  \\
+              & r/findapath          & 14  \\
+    \midrule
+    Finance   & r/personalfinance    & 208 \\
+              & r/povertyfinance     & 36  \\
+              & r/investing          & 31  \\
+              & r/FinancialPlanning  & 12  \\
+    \midrule
+    Auxiliary & r/Advice             & 9   \\
+              & r/ChronicPain        & 4   \\
+              & r/relationship\_advice & 2 \\
+    \midrule
+    \textbf{Total} &                 & \textbf{620} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The human reference for each post is the upvote-weighted distribution
+of top-level comments classified by stance (\cref{sec:m_callB}). This
+operationalisation, following \citet{sachdeva-2025-aita}, measures what
+vocal commenters in a given subreddit would advise. It is not a
+measurement of general human consensus: Reddit commenters skew young,
+technical, and politically progressive relative to the general
+population, and individual subreddits have well-documented ideological
+priors (most visibly r/personalfinance and the FIRE movement). Results
+sections use the term ``Reddit community consensus'' or
+``upvote-weighted comment distribution''; the implications for
+generalisability are unpacked in \cref{chap:discussion}.
+
+%% -----------------------------------------------------------------------
+\section{The annotation pipeline}
+\label{sec:m_annotation}
+
+\subsection{Rationale for an LLM annotator}
+\label{sec:m_annotator_rationale}
+
+Manual annotation of 620 posts with comment-level stance classification
+was infeasible within the thesis timeline; an LLM-as-annotator approach
+was adopted with explicit human validation. Three considerations
+motivated this choice. Scale: 620 posts with a median of 39 top-level
+comments each yields roughly 24,000 comment-level stance judgements,
+which at one minute per comment exceeds 400 hours of manual coding.
+Non-circularity: the annotator (Gemini 2.0 Flash Lite) is not one of
+the four study models, avoiding circular dependence between the LLM
+behaviour under test and the human reference distribution used to
+evaluate it. Reproducibility: an LLM annotator with a fixed prompt at
+temperature 0 is deterministically reproducible across runs. LLM-as-
+annotator approaches have shown competitive agreement with human coders
+on text annotation tasks where the construct is well-specified
+\citep{gilardi-2023-llm-annotator, ziems-2024-llm-coder}.
+
+\subsection{Gemini Call A — decision-post gating}
+\label{sec:m_callA}
+
+The first Gemini call evaluated whether each post represented a
+genuine binary decision and, where it did, extracted the two options.
+Inputs were post title and selftext; outputs were
+\texttt{is\_genuine\_decision} (boolean), \texttt{option\_risky}
+(string), \texttt{option\_safe} (string), and \texttt{domain\_match}
+(boolean). The binarisation rule labels the choice with higher variance
+in outcome — higher upside but also higher potential cost — as
+\texttt{option\_risky}, and the more conservative choice as
+\texttt{option\_safe}. Output was constrained to a JSON schema; posts
+returning malformed JSON or \texttt{is\_genuine\_decision = false} were
+dropped from the corpus. The full Call A prompt appears in
+Appendix~A.3.
+
+\subsection{Gemini Call B — stance, features, SES}
+\label{sec:m_callB}
+
+The second Gemini call classified each top-level comment by stance and
+annotated each post with decision features and a socioeconomic-status
+indicator. For each top-level comment, the output was
+\texttt{stance} $\in \{$risky, safe, neutral$\}$ and a
+\texttt{confidence} score in $[0, 1]$. For each post, the output was
+four decision-feature labels — \texttt{reversibility} (reversible /
+irreversible), \texttt{time\_horizon} (short / long),
+\texttt{resource\_constraint} (tight / loose), and
+\texttt{trade\_off\_type} (short-term vs long-term, aggressive vs
+conservative, dependent vs independent) — and one
+\texttt{ses\_level} (low / mid / high) inferred from natural cues in
+the post body (income mentions, financial-stress language, education
+level). The full Call B prompt appears in Appendix~A.4.
+
+\subsection{Validation: Krippendorff's $\alpha$}
+\label{sec:m_validation}
+
+To validate the Gemini annotations, a stratified subsample of 150
+posts was manually coded and inter-rater agreement with the Gemini
+labels was computed. The sample was stratified by domain (50 each
+from education, career, finance) and consensus level (50 high-safe,
+50 ambiguous, 50 high-risky). The human coder was the thesis author,
+blind to the Gemini labels, using the same annotation schema.
+
+Two targets were validated. The option-binarisation output from Call A
+(which option is the risky one?) was coded for all 150 posts. The
+stance classification output from Call B was coded on a 5-comment
+subsample per post, yielding 750 comment-level judgements. Agreement
+was computed using Krippendorff's $\alpha$ with nominal coding
+\citep{krippendorff-2018-alpha, artstein-2008-irr}. The decision rule
+fixed in advance was: if $\alpha < 0.70$ for either target, the
+Gemini prompt is revised and scoring is re-run before any downstream
+analysis.
+
+Validation results:
+\begin{itemize}
+\item Option binarisation (Call A): $\alpha = $ \todo{compute from
+      manual validation; do not invent a value}.
+\item Stance classification (Call B): $\alpha = $ \todo{compute from
+      manual validation; do not invent a value}.
+\end{itemize}
+
+Implications of any annotation cells falling below the $\alpha = 0.70$
+threshold are discussed in \cref{chap:discussion}.
+
+%% -----------------------------------------------------------------------
+\section{LLM experimental conditions}
+\label{sec:m_experiments}
 
 \subsection{Study models}
-\label{sec:models}
+\label{sec:m_models}
 
-% gpt-5, claude-sonnet-4-6, mistral-large-2411, llama-4-maverick
-% OpenRouter routing, temperature 0.7, N=10 samples
+Four post-trained LLMs from four developers were evaluated through
+their respective production APIs at default temperature
+($T = 0.7$) unless otherwise stated:
 
-\section{Baseline experiment (Step 5)}
-\label{sec:step5}
+\begin{itemize}
+\item \textbf{gpt}: \texttt{openai/gpt-5}
+\item \textbf{claude}: \texttt{anthropic/claude-sonnet-4-6}
+\item \textbf{mistral}: \texttt{mistralai/mistral-large-2411}
+\item \textbf{llama}: \texttt{meta-llama/llama-4-maverick}
+\end{itemize}
 
-% Advisor framing, forced choice, abs_gap metric
+GPT was accessed via the OpenAI direct API; the other three via
+OpenRouter. No system prompts were used beyond the experiment prompt
+itself; no tool calling or function calling was enabled. Four
+developers were selected to reduce the risk that a finding reflects an
+artefact of a single post-training pipeline.
 
-\section{Direction 1: verbalized sampling (Step 6)}
-\label{sec:step6}
+\subsection{Baseline experiment}
+\label{sec:m_baseline}
 
-% Conditions: baseline (reused), VS, DV, HighT
-% Post selection: 150 most ambiguous (risky_ratio ∈ [0.35, 0.65])
-% Entropy recovery as primary metric
+The baseline experiment evaluated each model on each of the 620
+qualified posts under a forced binary choice. The prompt template was:
 
-\section{Direction 2: role framing (Step 7)}
-\label{sec:step7}
+\begin{quote}\small\ttfamily
+\{post\_text\} \\
+\\
+The two options being considered are: \\
+Option A: \{option\_risky\} \\
+Option B: \{option\_safe\} \\
+\\
+Which option should I choose? Respond with exactly two words: \\
+``Option A'' or ``Option B''. Do not explain. Do not restate the \\
+options. Do not add any other text.
+\end{quote}
 
-% Three framings: advisor (reused), oracle, personal
-% All 620 posts, same N=10, T=0.7
+Sampling parameters were $N{=}10$ per (post, model), $T = 0.7$,
+\texttt{max\_tokens} = 20. Total calls: $620 \times 4 \times 10 =
+24{,}800$. Baseline results provide the reference distribution against
+which the Direction 1 and Direction 2 interventions are compared
+(\cref{chap:direction1}, \cref{chap:direction2}); their use in the
+advisor framing of Direction 2 is the reused baseline noted in
+\cref{sec:d2_method}.
 
-\section{Statistical analysis}
-\label{sec:stats}
+\subsection{Direction 1 — Verbalized Sampling diagnostic}
+\label{sec:m_d1}
 
-% Paired bootstrap n=10000, seed=42
-% BH FDR correction across 11 comparisons
-% Mann-Whitney U for domain and trade-off type effects
+Direction 1 tested whether the entropy collapse observed at baseline
+is recoverable through an output-format manipulation. The analytical
+sample was the 132 posts with
+\texttt{human\_risky\_ratio} $\in [0.20, 0.80]$ — the ambiguous
+subset where the upvote-weighted comment distribution is itself
+genuinely divided. Restricting to ambiguous posts isolates cases where
+distributional alignment is most informative; posts on which the
+community already converges leave little entropy gap to recover. Four
+conditions were run:
+
+\begin{enumerate}
+\item \textbf{Baseline} (reused from \cref{sec:m_baseline}, on the
+      ambiguous subset).
+\item \textbf{VS} (Verbalized Sampling): the prompt asks for
+      $P(\text{A})$ and $P(\text{B})$ in an exact two-line format;
+      $N{=}3$, $T = 0.7$, \texttt{max\_tokens} = 200.
+\item \textbf{DV} (Distribution Verbalization): identical sampling
+      parameters to VS, but framed descriptively
+      (``Among advice-givers on /r/\{subreddit\}, what fraction would
+      recommend $\ldots$'').
+\item \textbf{High-temperature control}: identical prompt to baseline,
+      but $T = 1.2$, $N{=}20$, \texttt{max\_tokens} = 30.
+      Tests whether sampling temperature alone explains the baseline
+      collapse.
+\end{enumerate}
+
+All four condition prompts are reproduced verbatim in Appendix~A.5.
+Total new calls (excluding reused baseline):
+$132 \times 4 \times (3 + 3 + 20) = 13{,}728$.
+
+\subsection{Direction 2 — Role framing}
+\label{sec:m_d2}
+
+Direction 2 tested whether the LLM's assigned epistemic role
+modulates the alignment gap independently of output format. The
+analytical sample was the full 620-post corpus; restricting to the
+ambiguous subset would have inflated the measured importance of any
+framing effect by pre-selecting cases where the manipulation is most
+likely to register. Three framings were applied to identical post text
+and identical Option A / Option B mapping:
+
+\begin{enumerate}
+\item \textbf{Advisor} (reused from \cref{sec:m_baseline}):
+      ``Which option should I choose?''
+\item \textbf{Oracle} (new): ``Among advice-givers on /r/\{subreddit\}
+      who saw a post like this, which option would receive more upvoted
+      recommendations?''
+\item \textbf{Personal} (new): ``If you personally were facing this
+      decision, which option would you choose?''
+\end{enumerate}
+
+Sampling parameters matched the baseline: $N{=}10$, $T = 0.7$,
+\texttt{max\_tokens} = 30. Total new calls (excluding reused advisor):
+$620 \times 4 \times 10 \times 2 = 49{,}600$. All framing prompts
+appear in Appendix~A.6.
+
+\Cref{tab:m_experiments} summarises the three experiments.
+
+\begin{table}[t]
+  \centering
+  \caption{Summary of LLM experiments. Total calls includes only new
+    API calls; reused baseline is not double-counted across
+    experiments.}
+  \label{tab:m_experiments}
+  \begin{tabular}{lcccr}
+    \toprule
+    Experiment & Sample size & Conditions & $N$ per cell & Total calls \\
+    \midrule
+    Baseline                                 & 620 posts & 1 & 10 & 24{,}800 \\
+    Direction 1 (\cref{chap:direction1})     & 132 posts & 3 new & 3 / 3 / 20 & 13{,}728 \\
+    Direction 2 (\cref{chap:direction2})     & 620 posts & 2 new & 10 & 49{,}600 \\
+    \midrule
+    \textbf{Total new calls}                 &           &       &     & \textbf{88{,}128} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Implementation notes}
+\label{sec:m_implementation}
+
+Forced-choice responses were parsed with a strict regular expression
+that matched an isolated ``Option A'' or ``Option B'' token at the
+start or end of the response, case-insensitive, with optional
+markdown emphasis. Section-header or parenthetical mentions of either
+option (``Option A: Attend $\ldots$'') were rejected as unparseable, a
+strictness adopted after pilot runs revealed that lenient substring
+matching mis-classified reasoning preambles. Verbalized Sampling
+responses were parsed with a strict regex requiring the literal
+$P(\cdot) = x$ format; outputs whose two probabilities summed within
+$[0.90, 1.10]$ were renormalised, and outputs outside that range were
+logged as parse failures and excluded.
+
+Parse-failure rates were low for all (model, condition) cells with one
+exception. Baseline failure rates ranged from 0.00\% (GPT) to 1.65\%
+(Llama). Direction 2 failure rates ranged from 0.02\% (GPT) to 3.24\%
+(Llama under the personal framing). The single elevated case was
+Llama on the Direction 1 high-temperature control, where 245 of 2,640
+responses (9.3\%) failed strict parsing — at $T = 1.2$ the model
+occasionally produced reasoning preambles before committing to a
+choice. The implications of this elevated failure rate are addressed
+in \cref{chap:discussion}.
+
+Concurrent execution used 8 worker threads per experiment to bound
+wall-clock time. Transient API errors were retried up to three times
+with exponential backoff. All API calls were logged with
+\texttt{prompt\_tokens}, \texttt{completion\_tokens}, and computed
+USD cost.
+
+%% -----------------------------------------------------------------------
+\section{Outcome variables}
+\label{sec:m_outcomes}
+
+LLM--human alignment is measured along three complementary
+dimensions: position distance, distributional shape, and information-
+theoretic distance.
+
+\textit{Human reference.} The reference probability is the upvote-
+weighted fraction of top-level comments classified as supporting the
+risky option:
+\begin{equation}
+  p_{\text{human}} = \frac{\sum_i u_i \cdot \mathbb{1}[\text{stance}_i = \text{risky}]}{\sum_i u_i \cdot \mathbb{1}[\text{stance}_i \neq \text{neutral}]},
+  \label{eq:m_phuman}
+\end{equation}
+where $u_i$ is the upvote count of comment $i$, and comments
+classified as neutral are excluded from both numerator and
+denominator.
+
+\textit{LLM choice rate.} The LLM reference is
+$p_{\text{llm}} = n_A / n_{\text{valid}}$, where $n_A$ is the count of
+Option A responses across $N$ samples and $n_{\text{valid}}$ is the
+count of parseable responses.
+
+\textit{Position gaps.} The signed and absolute position gaps are
+\begin{equation}
+  \texttt{mean\_gap} = p_{\text{llm}} - p_{\text{human}},
+  \qquad
+  \texttt{abs\_gap} = | p_{\text{llm}} - p_{\text{human}} |.
+  \label{eq:m_gap}
+\end{equation}
+The absolute gap is the primary outcome for pairwise hypothesis tests
+in \cref{chap:direction1} and \cref{chap:direction2}.
+
+\textit{Binary Shannon entropy.} The Shannon entropy of a Bernoulli
+distribution with parameter $p$, in nats, is
+\begin{equation}
+  H(p) = -p \log p - (1 - p) \log (1 - p),
+  \label{eq:m_entropy}
+\end{equation}
+bounded above by $\ln 2 \approx 0.693$
+\citep{shannon-1948-entropy}.
+
+\textit{Entropy gap.} The entropy gap is
+\begin{equation}
+  \texttt{entropy\_gap} = H(p_{\text{human}}) - H(p_{\text{llm}});
+  \label{eq:m_egap}
+\end{equation}
+positive values indicate that the LLM distribution is more peaked
+than the human distribution on the same post.
+
+\textit{KL divergence with Laplace smoothing.} The directional KL
+divergence from the human distribution to the LLM distribution is
+\begin{equation}
+  \mathrm{KL}(p_{\text{human}} \| p_{\text{llm}}) = p \log \frac{p}{q} + (1 - p) \log \frac{1 - p}{1 - q},
+  \label{eq:m_kl}
+\end{equation}
+where $p = p_{\text{human}}$, $q = p_{\text{llm}}$, and both are
+clipped to $[\epsilon, 1 - \epsilon]$ with $\epsilon = 10^{-3}$ to
+avoid divergence when the LLM produces a deterministic output.
+Reported in nats. The methodology of an entropy-based alignment
+outcome follows the moral-judgment work of
+\citet{russo-2026-pluralistic}.
+
+\textit{Entropy recovery rate (Direction 1).} The recovery rate
+quantifies the proportion of the baseline-to-human entropy gap that an
+intervention closes:
+\begin{equation}
+  \texttt{recovery} = \frac{H_{\text{intervention}} - H_{\text{baseline}}}{H_{\text{human}} - H_{\text{baseline}}}.
+  \label{eq:m_recovery}
+\end{equation}
+Values near 100\% indicate that the intervention restores LLM entropy
+to the human reference level on the same posts.
+
+\textit{Qualification criterion.} A (post, model, condition) cell is
+retained for analysis if $n_{\text{valid}} \geq 6$ out of $N{=}10$
+samples (or $n_{\text{valid}} \geq 2$ out of $N{=}3$ samples for the
+Direction 1 VS and DV conditions, which use a smaller per-cell sample
+size). Cells below this threshold are excluded from pairwise tests.
+
+Intuitions for each metric, including worked examples, are developed
+in \cref{sec:d1_baseline} (baseline gap) and \cref{sec:d1_vs}
+(recovery rate).
+
+%% -----------------------------------------------------------------------
+\section{Statistical inference}
+\label{sec:m_stats}
+
+Hypothesis testing rests on paired bootstrap resampling with
+Benjamini-Hochberg false-discovery-rate (FDR) correction for multiple
+comparisons \citep{efron-1979-bootstrap, benjamini-1995-fdr}.
+
+\textit{Paired bootstrap procedure.} For each pairwise condition
+contrast, the unit of resampling is the (post, model) pair. Within a
+single bootstrap iteration, $n$ pairs are sampled with replacement
+from the $n$ qualified pairs available, and the mean of the paired
+differences is computed. The procedure is repeated 10,000 times to
+produce an empirical sampling distribution of the mean difference. The
+random seed is fixed at 42 throughout. 95\% confidence intervals are
+percentile-method intervals from this distribution; two-sided
+$p$-values are computed as
+$p = 2 \min(\Pr[\hat{\Delta} \geq 0], \Pr[\hat{\Delta} \leq 0])$
+with a floor of $1 / 10{,}000$.
+
+For unpaired contrasts (e.g., between-domain comparisons in
+\cref{chap:discussion}), each group is resampled independently before
+the mean difference is computed.
+
+\textit{Rationale for bootstrap over a parametric test.} The
+\texttt{abs\_gap} distribution is bounded in $[0, 1]$ and right-
+skewed in practice; the bootstrap requires no normality assumption and
+is robust to outliers, both desiderata met by the data at hand.
+
+\textit{Multiple-comparison correction.} The 11 primary comparisons
+in the thesis (6 Direction 1 pairwise tests, 3 Direction 2 pairwise
+tests, 2 subgroup tests) are corrected jointly using the Benjamini-
+Hochberg procedure at $q = 0.05$ \citep{benjamini-1995-fdr}. Results
+sections report adjusted $p$-values as $p_\text{fdr}$.
+
+\textit{Effect sizes.} Cohen's $d$ is reported for paired contrasts as
+$d = \bar{x}_\text{diff} / s_\text{diff}$, where $\bar{x}_\text{diff}$
+and $s_\text{diff}$ are the mean and standard deviation of the paired
+differences \citep{cohen-1988-effect-size}. Conventional verbal
+labels are used: $|d| < 0.2$ small, $0.2 \leq |d| < 0.5$ moderate,
+$0.5 \leq |d| < 0.8$ medium, $|d| \geq 0.8$ large.
+
+\textit{Mixed-effects regression.} For the content-heterogeneity
+analysis reported in \cref{chap:discussion}, a linear mixed-effects
+model is fit with \texttt{abs\_gap} as outcome, the four decision
+features and SES as fixed effects, and post and model as random
+intercepts. Variance components are interpreted to assess whether
+content features explain meaningful variance after accounting for
+post-level and model-level random variation.
