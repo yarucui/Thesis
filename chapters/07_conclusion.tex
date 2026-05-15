@@ -1,9 +1,102 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
 
-% DRAFT NOTES (delete before submission):
-% 3 paragraphs: summary → so what → call to action for the field
+%% -----------------------------------------------------------------------
+\section{Three contributions}
+\label{sec:conc_contributions}
 
-% Paragraph 1: what we did and found
-% Paragraph 2: why it matters (alignment evaluation methodology is systematically biased)
-% Paragraph 3: the path forward
+This thesis makes three contributions to the study of LLM--human
+alignment on personal-decision advice.
+
+\paragraph{Empirical contribution.}
+We constructed and analysed the first cross-model alignment dataset
+for personal-decision advice: 620 real Reddit submissions in
+education, career, and finance, all posted after the knowledge cutoff
+of every study model, paired with their upvote-weighted comment
+distributions as the alignment target. Across four post-trained LLMs,
+the distributional gap between LLM forced-choice outputs and the
+community baseline is large and consistent: a mean entropy gap of
+0.575 nats on the ambiguous subset, with a Cohen's $d$ of 3.58. The
+dataset, with built-in training-contamination control through the
+post-cutoff filter, is the primary empirical asset this thesis
+contributes to the field.
+
+\paragraph{Mechanistic contribution.}
+Through a verbalized-sampling diagnostic on the ambiguous subset, we
+demonstrated that the alignment gap is decoding-driven rather than
+belief-driven. A prompt-level change --- asking the LLM to output a
+probability distribution over options, rather than commit to a single
+forced choice --- recovered 94 to 101 percent of the entropy gap
+across all four study models. The recovery is robust to a temperature
+control: raising sampling temperature from 0.7 to 1.2 in the same
+forced-choice format closed only a small fraction of the gap that
+distributional output closed at the lower temperature. The LLM's
+internal belief distribution over personal-decision options, in other
+words, is preserved through current post-training paradigms; what
+collapses at deployment is the interface, not the belief.
+
+\paragraph{Theoretical contribution.}
+We developed the \textbf{interface-level vs training-level
+distinction} as an analytic framework for organising the space of
+LLM alignment interventions. Output format (single token vs.
+distribution) operates at the interface level: it determines what the
+model is permitted to express. Role framing (advisor vs. oracle)
+operates closer to the training level: it modulates what the model is
+taught to treat as appropriate. These two levers' effects on
+absolute alignment gap differ by approximately 16 times --- the
+empirical signature of the distinction. The framework locates existing accounts of LLM
+sampling --- the typicality account of
+\citet{zhang-2025-verbalized-sampling} and the descriptive--prescriptive
+account of \citet{sivaprasad-2025-descriptive-prescriptive} ---
+within a sharper question: at what point in the LLM stack can
+pluralism be recovered, and at what cost?
+
+%% -----------------------------------------------------------------------
+\section{The work in context}
+\label{sec:conc_context}
+
+This thesis contributes one piece of evidence to a longer conversation
+about whether and how language models can reflect the pluralism of
+human communities.
+
+The piece is small. One task type (binary forced choice); four
+models, all post-trained; three decision domains on Reddit; one month
+of post-cutoff data; one annotator pipeline. Findings here cannot
+speak to multi-turn deliberation, multi-option decisions, or the
+advice that LLMs give to non-English-speaking communities. The
+absolute alignment numbers describe alignment with the Reddit
+community baseline used here, not with humanity in general.
+
+The mechanism account we propose may not survive scrutiny in other
+tasks. It is plausible that in domains where post-training pressures
+are stronger --- safety filtering, refusal behaviour, factual
+recall --- the balance between interface and training levers shifts.
+The distinction is meaningful for personal-decision advice; whether it
+generalises is empirically open.
+
+If the mechanism account holds up beyond this thesis, it suggests an
+organising principle for LLM alignment work: mapping which alignment
+failures are interface-recoverable and which require deeper
+intervention. This thesis offers one instance of that mapping,
+applied to a domain where the answer turned out to be interface.
+
+%% -----------------------------------------------------------------------
+\section{Closing}
+\label{sec:conc_closing}
+
+\Cref{chap:introduction} opened with a puzzle: large language models
+are deployed as personal-decision advisors despite an entropy gap that
+compresses roughly 50/50 community judgements into near-100/0 LLM
+recommendations.
+
+The resolution offered by this thesis is structural rather than
+corrective. The LLMs are not wrong about pluralism. When asked for a
+distribution, they produce one that closely matches the community
+baseline on the same posts. They are deployed within an interface
+that does not ask. Single-answer queries compress the pluralism the
+model would otherwise express; the fix, for this class of alignment
+failure, is not a better model but a better query.
+
+When deployed as advisors, LLMs do not need to retrain in order to
+express the pluralism they already know --- they need to be asked for
+it.
