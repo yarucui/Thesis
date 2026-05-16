@@ -1,46 +1,362 @@
-\chapter{Direction 2: role framing has small but significant effects}
+\chapter{Direction 2: role framing as a candidate mechanism}
 \label{chap:direction2}
 
-% DRAFT NOTES (delete before submission):
-% Headline: all three framing comparisons significant after FDR, but Δ ≈ 0.01-0.03
-%           vs. Δ ≈ 0.23 for output format
-% Ordering: oracle < advisor < personal (oracle closest to human)
-% Figure: abs_gap by framing × model (grouped bars or violin)
-% Cross-domain: health posts closer to human (Δ = -0.182, p_fdr = 0.005)
-% Cross-trade-off: short_term_vs_long_term vs agg_vs_cons (Δ = -0.540, p_fdr < 0.001)
+%% -----------------------------------------------------------------------
+\section{Overview}
+\label{sec:d2_overview}
 
-\section{Framing effects on alignment gap}
-\label{sec:framing_effects}
+\Cref{chap:direction1} showed that asking an LLM to output a probability
+distribution recovers near-human entropy on personal-decision advice. A
+natural next question is whether the LLM's assigned role — prescriptive
+advisor or descriptive oracle — independently modulates the alignment
+gap. If role framing produces an effect comparable in magnitude to
+output format, the deployment toolkit expands: practitioners would have
+two distinct levers to recover pluralism, and the mechanism of advice
+collapse would involve a role-conditioned component as well as a
+decoding-conditioned one.
 
-% oracle vs advisor: Δ = -0.015, p_fdr = 0.005 **
-% oracle vs personal: Δ = -0.026, p_fdr < 0.001 ***
-% advisor vs personal: Δ = -0.012, p_fdr = 0.005 **
+\Cref{sec:d2_hypothesis} motivates the framing hypothesis from three
+lines of prior work. \Cref{sec:d2_method} describes the three-framing
+design over the full 620-post corpus. \Cref{sec:d2_framing} reports the
+headline framing effect on the absolute alignment gap and on entropy.
+\Cref{sec:d2_models} unpacks the per-model pattern, including a
+divergent case in which one model moved away from the human reference
+rather than toward it. \Cref{sec:d2_consensus} reports a brief
+robustness check across consensus strata. \Cref{sec:d2_synthesis}
+synthesises the framing result and motivates the cross-direction
+discussion that \cref{chap:discussion} develops.
 
-\section{Effect size in context}
-\label{sec:framing_effect_size}
+The headline finding is that oracle framing reliably reduces the
+alignment gap relative to advisor framing, but by a small amount: the
+effect is statistically detectable under FDR correction and consistent
+in three of four models. A full cross-direction comparison between the
+output-format intervention of \cref{chap:direction1} and the role-framing
+intervention of this chapter awaits \cref{chap:discussion}.
 
-% Compare to D1 format effect: framing is ~6-11x smaller
-% Practical significance vs. statistical significance
+%% -----------------------------------------------------------------------
+\section{A competing hypothesis worth testing}
+\label{sec:d2_hypothesis}
 
-\section{Model-specific framing sensitivity}
-\label{sec:framing_models}
+Three lines of prior work motivate the hypothesis that an LLM's
+epistemic role — what it is asked to do with a question — substantially
+shapes its output, independently of the output format.
 
-% Which models are most sensitive to framing?
-% mistral shows largest oracle-personal gap
+\subsection*{Theoretical motivation: descriptive versus prescriptive sampling}
 
-\section{Domain moderation}
-\label{sec:domain}
+A recent account of post-trained LLM sampling separates two components
+\citep{sivaprasad-2025-descriptive-prescriptive}. The \emph{descriptive}
+component reflects statistical norms encoded by pre-training and visible
+in base-model token distributions; the \emph{prescriptive} component
+reflects implicit ideals introduced by reinforcement learning from human
+feedback, which biases the model toward what raters preferred over what
+the training data described. Under this account, the two components are
+selectively activated by question framing. Asking ``what would most
+people do?'' should engage the descriptive component, reproducing the
+empirical distribution of behaviour. Asking ``what should this person
+do?'' should engage the prescriptive component, collapsing to a single
+normative ideal. The theory predicts that descriptive framing can
+partially recover pluralism in a post-trained model whose default
+behaviour is prescriptive, by routing the question through the
+statistical-norm head rather than the ideal-action head.
 
-% Health vs. other: Δ = -0.182, p_fdr = 0.005 (smaller gap on health posts)
-% Caveat: health n=48 rows, underpowered
+\subsection*{Empirical role-dependent effects}
 
-\section{Trade-off type moderation}
-\label{sec:tradeoff}
+Empirical work supports the broader claim that LLM behaviour depends on
+conversational role. Studies of role-conditioned affective alignment
+report that models cast as advisors give diagnostic reframings of user
+problems, while the same models cast as peers accommodate the user's
+position and avoid contradicting it \citep{personalization-2026-affective-alignment}.
+The shift is not a matter of tone alone: the underlying judgements that
+the model expresses about the situation differ across roles. A
+parallel result on parental-responsibility scenarios reports that
+prescriptive framing of the same dilemmas (``what should the parent do
+about this?'') produced systematically higher attributions of
+responsibility than descriptive framing (``what would most parents
+do?''), again indicating that normative expectations are activated
+under prescriptive cues \citep{lin-2025-parental-bias}.
 
-% short_term_vs_long_term vs aggressive_vs_conservative: Δ = -0.540, p_fdr < 0.001
-% LLMs more aligned with humans on short-term/long-term trade-offs
+\subsection*{Practical deployment relevance}
 
-\section{Summary}
-\label{sec:d2_summary}
+In deployment, users ask LLMs both kinds of questions. They ask ``what
+should I do'' (advice-seeking, prescriptive) and ``what would most
+people in my position do'' (calibration-seeking, descriptive) — sometimes
+within the same conversation. If role framing substantially modulates
+the alignment gap, then practitioners have a second prompt-level lever
+that is as actionable as the output-format intervention of
+\cref{chap:direction1}. If role framing produces only a small effect,
+the practical recommendation collapses to a single guideline: focus on
+output format, and let role framing fall where it may.
 
-% Framing matters but effect is small; task structure matters more
+These three lines of reasoning support a directional hypothesis worth
+testing on the same corpus and the same four models used in
+\cref{chap:direction1}:
+
+\begin{quote}
+\textbf{H4.} Compared to the prescriptive advisor framing, the
+descriptive oracle framing reduces the alignment gap by an amount
+comparable to the output-format manipulation in \cref{chap:direction1}.
+\end{quote}
+
+%% -----------------------------------------------------------------------
+\section{Method}
+\label{sec:d2_method}
+
+We tested H4 on the full 620-post corpus rather than restricting to the
+ambiguous subset used in \cref{chap:direction1}. The full-corpus design
+guards against pre-selecting cases in which the framing manipulation is
+most likely to register an effect: if role framing matters only on
+ambiguous posts, the ambiguous-only design would inflate its measured
+importance.
+
+Each post was presented to each of the four study models under three
+framings, holding the post text, the Option A / Option B mapping, and
+the strict two-word output instruction identical across framings:
+
+\begin{itemize}
+\item \textbf{Advisor} (reused from \cref{sec:d1_baseline}): ``Which
+      option should I choose?'' This is the prescriptive baseline.
+\item \textbf{Oracle} (new): ``Among advice-givers on /r/\{subreddit\}
+      who saw a post like this, which option would receive more upvoted
+      recommendations?'' This is the descriptive condition implied by
+      \citet{sivaprasad-2025-descriptive-prescriptive}.
+\item \textbf{Personal} (new): ``If you personally were facing this
+      decision, which option would you choose?'' This shifts the
+      referent from a generalised advice-seeker to the model itself.
+\end{itemize}
+
+Each (post, model, framing) cell drew $N{=}10$ samples at $T{=}0.7$ with
+\texttt{max\_tokens}=30. We re-used the format directive from the
+\cref{chap:direction1} baseline (``Respond with exactly two words:
+\textit{Option A} or \textit{Option B}. Do not explain. Do not restate
+the options. Do not add any other text.'') after pilot results showed
+that softer directives produced reasoning-preamble outputs in two
+models. Total new API calls: 49,600 across the oracle and personal
+framings; advisor framing was the previously collected baseline. A
+qualified cell required $n_\text{valid} \geq 6$ committal responses;
+99.4\% of cells qualified.
+
+%% -----------------------------------------------------------------------
+\section{The framing effect is statistically detectable but small}
+\label{sec:d2_framing}
+
+Across 620 posts and four models, oracle framing produced a small but
+consistent reduction in alignment gap relative to advisor framing — a
+result that is statistically robust under FDR correction and small by
+conventional effect-size standards.
+
+\subsection*{Headline results}
+
+\Cref{tab:d2_pooled} summarises the three framings pooled across models
+and posts. The mean absolute alignment gap fell from 0.352 under
+advisor framing to 0.338 under oracle framing, a reduction of 0.015.
+Personal framing produced a gap of 0.365, slightly larger than advisor.
+
+\begin{table}[t]
+  \centering
+  \caption{Mean absolute gap, LLM entropy, and KL divergence by framing,
+    pooled across four models and 620 posts (qualified cells only).
+    Human reference entropy is 0.239 nats on the full corpus.}
+  \label{tab:d2_pooled}
+  \begin{tabular}{lcccc}
+    \toprule
+    Framing  & $n$ cells & $\overline{\textit{abs\_gap}}$
+             & $\bar{H}_{\text{LLM}}$ & $\overline{\text{KL}}$ \\
+    \midrule
+    Advisor  & 2{,}472 & 0.352 & 0.045 & 2.023 \\
+    Oracle   & 2{,}477 & 0.338 & 0.072 & 1.833 \\
+    Personal & 2{,}446 & 0.365 & 0.091 & 1.950 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The three pairwise comparisons are all significant under FDR correction
+(\cref{tab:d2_pairwise}). The largest of the three framing differences
+is between oracle and personal ($\Delta = -0.026$); the
+oracle--advisor contrast that operationalises H4 is half that size.
+
+\begin{table}[t]
+  \centering
+  \caption{Paired bootstrap tests on absolute alignment gap.
+    $n_\text{boot}{=}10{,}000$, pairing on (post, model). $p_\text{fdr}$
+    is Benjamini-Hochberg adjusted across all 11 paired comparisons in
+    the thesis.}
+  \label{tab:d2_pairwise}
+  \begin{tabular}{lcccr}
+    \toprule
+    Comparison & $n_\text{pairs}$ & $\Delta$ & 95\% CI & $p_\text{fdr}$ \\
+    \midrule
+    Oracle $-$ Advisor   & 2{,}470 & $-0.015$ & $[-0.025, -0.005]$ & $0.005$ \\
+    Oracle $-$ Personal  & 2{,}444 & $-0.026$ & $[-0.036, -0.016]$ & $<0.001$ \\
+    Personal $-$ Advisor & 2{,}442 & $+0.012$ & $[+0.004, +0.020]$ & $0.005$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection*{Effect size}
+
+The Cohen's $d$ for oracle versus advisor (paired) is $-0.056$. By
+Cohen's conventional thresholds, $|d| < 0.20$ is the small-effect band,
+and the observed $d$ is well below even that boundary. The result
+therefore supports a calibrated form of H4: framing produces a real,
+replicable shift in the predicted direction, with a magnitude small
+enough that role framing on its own cannot account for the
+LLM--community alignment gap documented in \cref{sec:d1_baseline}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig51_framing_boxplot/out.pdf}
+  \caption{Distribution of absolute alignment gap by framing within
+    each model. The oracle-versus-advisor reduction is small and
+    consistent in three models; the Mistral panel shows the divergent
+    pattern discussed in \cref{sec:d2_models}.}
+  \label{fig:d2_boxplot}
+\end{figure}
+
+\subsection*{Entropy under framing}
+
+Mean LLM entropy rose with descriptive framing — from 0.045 nats under
+advisor to 0.072 nats under oracle, with personal at 0.091 nats — but
+all three values remained an order of magnitude below the 0.621 nats
+recovered by Verbalized Sampling on the ambiguous subset. The
+oracle-framing prompt loosens the entropy collapse slightly. It does
+not lift it.
+
+\subsection*{An incidental observation on personal framing}
+
+Personal framing — asking the model what it would do — produced
+slightly larger gaps than advisor framing ($\Delta = +0.012$,
+$p_\text{fdr} = 0.005$), the opposite of what a self-as-prescriptive
+reading would predict. The personal--advisor difference is small and
+not the focus of this chapter; we report it for completeness and
+return to it in \cref{chap:discussion}.
+
+%% -----------------------------------------------------------------------
+\section{Per-model heterogeneity: a divergent case}
+\label{sec:d2_models}
+
+The framing effect is consistent in direction for three of four models
+and reverses for one, suggesting that role framing — unlike output
+format — is sensitive to model-specific post-training choices.
+
+\Cref{tab:d2_per_model} reports the mean absolute gap for each model
+under each framing. Three models (GPT-5, Claude, Llama) show small
+reductions under oracle framing relative to advisor, ranging from
+$-0.015$ for GPT-5 to $-0.048$ for Llama. Mistral shows the opposite
+pattern: oracle framing increases the absolute gap by 0.028, and
+personal framing increases it by 0.062.
+
+\begin{table}[t]
+  \centering
+  \caption{Mean absolute alignment gap by (model, framing). Arrows
+    indicate whether oracle and personal framings move the gap toward
+    ($\downarrow$) or away from ($\uparrow$) the human reference
+    relative to the advisor baseline.}
+  \label{tab:d2_per_model}
+  \begin{tabular}{lcccc}
+    \toprule
+    Model   & Advisor & Oracle             & Personal           \\
+    \midrule
+    GPT-5   & 0.309   & 0.294 $\downarrow$ & 0.312 $\uparrow$   \\
+    Claude  & 0.360   & 0.336 $\downarrow$ & 0.347 $\downarrow$ \\
+    Llama   & 0.388   & 0.340 $\downarrow$ & 0.387 $\downarrow$ \\
+    Mistral & 0.353   & 0.381 $\uparrow$   & 0.415 $\uparrow$   \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Mistral's entropy under the descriptive framings also rises far more
+than the other models' (mean LLM entropy under oracle: 0.169 nats for
+Mistral, compared with 0.018, 0.049, and 0.051 for Claude, GPT-5, and
+Llama respectively). The descriptive prompt elicits broader output
+distributions from Mistral, but those broader distributions sit farther
+from the human reference rather than closer to it. This is the same
+model that, in \cref{sec:d1_temperature}, recovered 45\% of the entropy
+gap under high-temperature forced choice while the other three recovered
+essentially nothing. Mistral is unusually sensitive to non-format
+interventions, and that sensitivity does not always run in the aligning
+direction.
+
+One possible interpretation is that Mistral's post-training applies less
+aggressive distributional compression than the other three models. A
+more diffuse internal distribution would be more susceptible to
+non-format perturbations, including framing changes that activate
+training-data norms different from the Reddit advisor distribution. This
+interpretation is speculative: precise training differences across the
+four models are not publicly documented in sufficient detail to verify,
+and a single counter-case across four models cannot distinguish among
+competing post-training accounts. We flag the Mistral pattern as a
+target for future work and do not condition our broader claims on it.
+
+Read across the table, role framing produces effects that are smaller
+than the output-format effect of \cref{chap:direction1} and less
+consistent across models. Persona and role manipulations are known to
+produce small and uneven effects in unrelated task settings
+\citep{zheng-2024-helpful-assistant, kim-2025-persona-double-edged}; our
+result extends this pattern to forced-choice advice on personal
+decisions.
+
+%% -----------------------------------------------------------------------
+\section{Robustness across consensus levels}
+\label{sec:d2_consensus}
+
+The oracle-versus-advisor effect is small at every level of community
+consensus on the underlying post, but its direction is not uniform. We
+stratified the qualified cells by the consensus label assigned in
+\cref{chap:methodology} — \texttt{high\_safe}, \texttt{ambiguous}, and
+\texttt{high\_risky} — and recomputed the oracle--advisor difference
+within each stratum.
+
+\begin{table}[t]
+  \centering
+  \caption{Mean absolute gap by framing within each consensus stratum,
+    pooled across the four models. The oracle--advisor difference is
+    small in magnitude in every stratum.}
+  \label{tab:d2_consensus}
+  \begin{tabular}{lccccc}
+    \toprule
+    Consensus level & $n$ cells & Advisor & Oracle & Personal & Oracle $-$ Advisor \\
+    \midrule
+    high\_safe  & 4{,}376 & 0.354 & 0.323 & 0.381 & $-0.030$ \\
+    ambiguous   & 736     & 0.470 & 0.465 & 0.456 & $-0.006$ \\
+    high\_risky & 2{,}283 & 0.311 & 0.323 & 0.305 & $+0.012$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The largest oracle--advisor reduction occurs on the high-safe posts
+(those where the community converged on the safer option), and the
+direction reverses by a similar magnitude on the high-risky posts. The
+ambiguous stratum, which one might expect to be the most receptive to
+descriptive framing, shows essentially no oracle--advisor difference
+(\cref{tab:d2_consensus}). The framing effect is small at every
+consensus level rather than concentrated at one. Whatever the descriptive
+prompt is doing, it is not selectively engaging cases where the human
+community itself is divided.
+
+%% -----------------------------------------------------------------------
+\section{Interim synthesis}
+\label{sec:d2_synthesis}
+
+Direction 2 supports a calibrated version of the role-framing
+hypothesis: framing matters, but it matters by a small amount. Three
+points summarise the finding. Oracle framing reliably reduces the
+absolute alignment gap relative to advisor framing
+($\Delta = -0.015$, $p_\text{fdr} = 0.005$). The effect size is small
+on conventional standards (Cohen's $d \approx -0.06$) and the
+oracle-versus-advisor reduction is half as large as the
+oracle-versus-personal reduction. The direction of the effect is not
+robust across all four study models: Mistral diverges from the
+descriptive-recovers-pluralism prediction, indicating that role framing
+interacts with model-specific post-training in a way that the
+output-format intervention of \cref{chap:direction1} does not.
+
+Comparing across directions, Verbalized Sampling reduced the average
+absolute alignment gap by 0.235 (\cref{sec:d1_vs}), while oracle framing
+reduced it by 0.015 (this chapter). The output-format intervention
+produces an effect approximately 16 times larger than the role-framing
+intervention. \Cref{chap:discussion} develops the implications of this
+ratio for the mechanism of LLM advice collapse and for deployment
+recommendations.
+
+What both directions together tell us about why LLM advice collapses —
+and how to fix it — is the subject of \cref{chap:discussion}.
