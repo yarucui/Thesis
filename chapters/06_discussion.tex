@@ -1,37 +1,607 @@
 \chapter{Discussion}
 \label{chap:discussion}
 
-% DRAFT NOTES (delete before submission):
-% Central argument: decompose what "alignment gap" is attributable to
-% 2x2 mechanism map: role (prescriptive/descriptive) × output (single-token/distribution)
+%% -----------------------------------------------------------------------
+\section{Overview}
+\label{sec:disc_overview}
 
-\section{A mechanism map of the alignment gap}
-\label{sec:mechanism_map}
+\Cref{chap:direction1} and \cref{chap:direction2} isolated two
+interventions on LLM advice collapse — verbalized sampling and role
+framing — and found them to differ in magnitude by a factor of
+approximately 16. This chapter argues that the ratio is not a
+quantitative curiosity but the empirical signature of a qualitative
+distinction: LLM advice collapse on personal decisions is primarily an
+interface-level phenomenon rather than a training-level one.
 
-%                    | Single-token output | Distribution output
-% Prescriptive role  | Baseline (step5)    | Direction 1 (VS/DV)
-% Descriptive role   | Direction 2         | Direction 1 (HighT comparison)
-%
-% Key finding: output format is the dominant axis (Δ~0.23);
-%              role framing is a detectable but minor axis (Δ~0.01-0.03)
+\Cref{sec:disc_map} maps the four experimental conditions onto a 2$\times$2
+mechanism space and reports the master figure of the thesis.
+\Cref{sec:disc_interface_training} develops the interface-level
+versus training-level distinction as our theoretical account.
+\Cref{sec:disc_existing} contrasts the account with two existing
+analyses of LLM sampling. \Cref{sec:disc_deployment} translates the
+account into five concrete deployment recommendations.
+\Cref{sec:disc_limitations} marks seven limitations and their
+implications. \Cref{sec:disc_future_work} outlines five future-work
+directions. A bridge paragraph closes the chapter.
 
-\section{Implications for alignment evaluation}
-\label{sec:implications}
+We do not claim that role framing is irrelevant, nor that output
+format is the only relevant lever. The claim is more specific: within
+the space of prompt-level interventions tested here, output format
+dominates role framing by an order of magnitude, with implications for
+both deployment practice and theoretical accounts of where LLM
+pluralism resides.
 
-% Existing benchmarks mostly use forced-choice → overestimate alignment gap
-% Verbalized sampling as a methodological recommendation
+%% -----------------------------------------------------------------------
+\section{The mechanism map: a 2$\times$2 synthesis}
+\label{sec:disc_map}
 
+Combining the manipulations of \cref{chap:direction1} and
+\cref{chap:direction2} yields a 2$\times$2 design with output format
+on one axis and epistemic role on the other. Mean LLM entropy in each
+cell maps the contribution of each lever to the recovery of
+distributional pluralism.
+
+\begin{table}[t]
+  \centering
+  \caption{The mechanism map. Each cell reports mean LLM entropy
+    (nats) and mean absolute alignment gap, pooled across the four
+    study models. Sample composition varies between cells (see
+    text); the baseline, VS, and DV cells use the
+    132-post ambiguous subset of \cref{chap:direction1}, while the
+    oracle cell uses the full 620-post corpus of
+    \cref{chap:direction2}. Human reference entropy on the ambiguous
+    subset is 0.621 nats.}
+  \label{tab:disc_2x2}
+  \begin{tabular}{lcc}
+    \toprule
+    Cell                                                              & $\bar{H}_{\text{LLM}}$ & $\overline{\textit{abs\_gap}}$ \\
+    \midrule
+    Advisor $\times$ single-token (baseline)                          & 0.046 & 0.446 \\
+    Oracle $\times$ single-token (D2 oracle)                          & 0.072 & 0.338 \\
+    Advisor $\times$ distribution (D1 VS)                             & 0.608 & 0.210 \\
+    Oracle $\times$ distribution (D1 DV)                              & 0.553 & 0.233 \\
+    \midrule
+    Human reference (ambiguous subset)                                & 0.621 & — \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \todo{fig 6.1: master 2$\times$2 mechanism map. Rows: epistemic role
+    (advisor / oracle). Columns: output format (single-token /
+    distribution). Each cell shows mean LLM entropy (nats) and mean
+    absolute gap. Annotate vertical and horizontal arrows with the
+    delta in each direction. Dashed reference line at 0.621 nats
+    (human reference).}
+  \caption{Master mechanism map. Vertical movement (changing
+    epistemic role, holding output format fixed) produces small
+    entropy shifts; horizontal movement (changing output format,
+    holding role fixed) produces large entropy shifts that approach
+    the human reference.}
+  \label{fig:disc_2x2}
+\end{figure}
+
+Reading \cref{tab:disc_2x2}, three observations organise the
+chapter.
+
+\textit{Vertical movement (changing role) produces small entropy
+changes.} Holding output format fixed at single-token and shifting
+from advisor to oracle moves mean entropy from 0.046 to 0.072 nats — a
+change of 0.026. Holding output format fixed at distribution and
+shifting from advisor (VS) to oracle (DV) moves entropy from 0.608 to
+0.553 nats — a change of $-$0.055. Both shifts are detectable under
+FDR correction (\cref{sec:d1_vs}, \cref{sec:d2_framing}). Both are
+small in absolute terms.
+
+\textit{Horizontal movement (changing format) produces large entropy
+changes.} Holding role fixed at advisor and shifting from single-token
+to distribution moves entropy from 0.046 to 0.608 nats — a change of
+$+$0.562. Holding role fixed at oracle, the analogous shift (oracle
+single-token to oracle distribution, with DV as a near-proxy for
+oracle distribution) moves entropy from 0.072 to 0.553 nats — a
+change of $+$0.481. Both shifts approach the human reference of 0.621
+nats.
+
+\textit{The vertical-to-horizontal asymmetry is the central
+empirical fact.} Measured in entropy, the format axis moves the LLM
+roughly an order of magnitude further than the role axis (0.562 nats
+versus 0.026 nats holding role at advisor; 0.481 nats versus
+$-$0.055 holding role at oracle). Measured in absolute alignment gap,
+the ratio of the output-format intervention (D1 VS minus baseline,
+$\Delta = -0.235$) to the role-framing intervention (D2 oracle minus
+advisor, $\Delta = -0.015$) is approximately 16. This asymmetry — and
+the consistency of the asymmetry across all four study models
+(\cref{sec:d1_crossmodel}) — is the central contribution this thesis
+offers to the literature on LLM alignment.
+
+Two design-honesty notes are due before the analysis moves on. First,
+the DV condition (advisor-framed distribution output) was run in
+\cref{chap:direction1} as a secondary VS condition rather than as a
+deliberate 2$\times$2 cell, and its prompt frames the question
+descriptively (``Among advice-givers on /r/\{subreddit\} who saw a
+post like this, what fraction would recommend $\ldots$'') while
+also requesting a distribution. DV is therefore approximately, but not
+perfectly, an instantiation of ``oracle + distribution.'' Second, the
+oracle/single-token cell is computed on the full 620-post corpus of
+\cref{chap:direction2}, while the other three cells are computed on
+the 132-post ambiguous subset of \cref{chap:direction1}. The cell
+estimates are not directly comparable as a clean factorial.
+\Cref{sec:disc_future_work} returns to a deliberate factorial design
+as future work.
+
+%% -----------------------------------------------------------------------
+\section{Interface-level versus training-level: a theoretical account}
+\label{sec:disc_interface_training}
+
+The asymmetry in \cref{sec:disc_map} motivates a distinction between
+two qualitatively different sources of LLM alignment failure, which
+we term \emph{interface-level} and \emph{training-level}.
+
+\subsection{The distinction}
+\label{sec:disc_distinction}
+
+The interface-level versus training-level distinction separates two
+loci at which an LLM's distributional behaviour can be shaped, with
+correspondingly different intervention costs.
+
+\textbf{Interface-level effects} are produced by what the LLM is
+asked to output — single token versus distribution, forced choice
+versus free response, structured versus unstructured format.
+Interface-level effects determine \emph{what the model is allowed to
+express}, independent of what the model has been trained to believe.
+
+\textbf{Training-level effects} are produced by what the LLM has
+internalised through training — pre-training distribution,
+instruction-tuning objectives, RLHF reward shaping. Training-level
+effects determine \emph{what the model believes is appropriate to
+output}, given a particular interface.
+
+The two are not independent in practice. Training shapes how the
+model behaves at each interface, and an interface change can therefore
+surface or suppress consequences of training. The analytic
+distinction is nonetheless meaningful: an intervention can target the
+interface (asking for a different output form) or the training (fine-
+tuning, persona injection, RLHF revision).
+
+\subsection{What the results imply}
+\label{sec:disc_implications}
+
+The 94--101\% entropy recovery under Verbalized Sampling
+(\cref{sec:d1_vs}) is the central evidence for an interface-level
+account: it shows that the LLM's internal belief distribution is not
+collapsed. Under a different interface, the same model — with the
+same weights, post-training pipeline, and decoding temperature —
+expresses near-human pluralism. The collapse documented at baseline is
+what the interface squeezes out, not what training has destroyed.
+
+The order-of-magnitude weaker effect of role framing
+(\cref{sec:d2_framing}) is the corroborating evidence. Role framing is
+a training-adjacent intervention: it modulates the ``appropriate
+output'' computation by changing the pragmatic context — what the
+model takes itself to be doing — without changing the form of the
+output it must produce. Its small effect confirms that training-level
+levers, in the sense relevant here, cannot easily move what the
+interface has already determined. The interface-level versus training-
+level distinction predicts exactly this pattern: changing what is
+allowed at the output surface should dominate changing what feels
+appropriate at the underlying decision.
+
+Read together, the two results support a single mechanistic claim
+under the interface-level versus training-level distinction: advice
+collapse on personal decisions is predominantly an interface
+phenomenon. The model encodes pluralism in its internal
+representation; forced-choice queries do not ask for it.
+
+\subsection{What the distinction does not claim}
+\label{sec:disc_not_claim}
+
+The interface-level versus training-level distinction is bounded in
+three ways that should be marked explicitly.
+
+It is \emph{not} a claim that training is irrelevant. RLHF
+demonstrably shapes what counts as a natural or appropriate output
+across many tasks \citep{kirk-2024-rlhf-diversity}, and Constitutional
+AI training \citep{bai-2022-constitutional} introduces additional
+training-level priors. Our claim is the narrower one: within the
+choice space provided by a given output interface, the contribution of
+training-level pressures to alignment failure is smaller than typically
+assumed. Replacing the interface dominates re-running the training.
+
+It is \emph{not} a claim that the distinction is exhaustive. Other
+categories of intervention — fine-tuning, retrieval augmentation,
+system prompts, agentic workflows — sit at varying positions on the
+interface-training spectrum and require their own analysis. The
+output-format manipulation in this thesis is one extreme of the
+spectrum, and the role-framing manipulation is a relatively pure case
+near the training-adjacent end. Intermediate interventions are not
+characterised by our two experiments.
+
+It is \emph{not} a universal claim. The thesis tests binary forced
+choice on personal-decision advice in three primary Reddit domains.
+Generalisation to other tasks — open-ended generation, multi-turn
+dialogue, multi-step reasoning — is an open empirical question. The
+descriptive-prescriptive account of \citet{sivaprasad-2025-descriptive-prescriptive}
+predicts that role framing should be more effective on tasks where
+the descriptive component carries more weight; that prediction is
+testable but not tested here.
+
+The interface-level versus training-level claim is therefore a
+mechanism account scoped to a specific task family. Within that scope,
+the evidence supports it; outside it, the claim remains to be
+evaluated.
+
+%% -----------------------------------------------------------------------
+\section{Relation to existing accounts}
+\label{sec:disc_existing}
+
+The interface-level versus training-level distinction is compatible
+with two established analyses of LLM sampling. The compatibility
+matters: our account does not displace existing mechanisms but
+locates them within a broader structural fact.
+
+\subsection{Typicality bias}
+\label{sec:disc_typicality}
+
+\citet{zhang-2025-verbalized-sampling} argue that RLHF reward models
+are trained on human preferences for typical-sounding text, producing
+a policy that over-weights modal completions during forced-token
+sampling. Verbalized Sampling sidesteps the bias by asking for a
+distribution, where typicality does not compress the output.
+
+The typicality account specifies one mechanism by which the interface-
+level constraint operates. It explains \emph{why} forced-token
+sampling collapses: the argmax-favouring head was trained that way.
+Our interface-level versus training-level distinction captures the
+\emph{structural} fact that motivates the typicality story: any
+intervention restricted to changing the output form will produce a
+much larger effect on distributional alignment than any intervention
+restricted to changing the training context. The two analyses are
+consistent and operate at different levels of explanation.
+
+What our work adds to the typicality account is the first cross-model
+evidence that VS recovery holds at near-ceiling levels for
+personal-decision advice. \citet{zhang-2025-verbalized-sampling}
+focused on creative generation, joke production, and trivia. The
+generalisation to forced-choice advice on real decisions — a setting
+closer to deployment — was not previously documented.
+
+\subsection{Descriptive versus prescriptive sampling}
+\label{sec:disc_descriptive}
+
+\citet{sivaprasad-2025-descriptive-prescriptive} propose that LLM
+sampling has a descriptive component (statistical norm from pre-
+training) and a prescriptive component (RLHF-trained ideal). Forced-
+choice queries activate the prescriptive component, producing
+collapse to a normative answer.
+
+The descriptive-prescriptive account predicts that role framing
+should partially recover pluralism by activating the descriptive
+component (``what would most people do''). Our finding that role
+framing recovers only 0.015 of an absolute alignment gap, while output
+format recovers 0.235, suggests that the prescriptive collapse cannot
+be substantially overridden by activating descriptive framing within a
+forced-token interface. The interface-level versus training-level
+distinction explains why: the prescriptive collapse and the format
+constraint are both manifest at the interface, but only an interface-
+level intervention reaches both.
+
+What our work adds is an explicit quantitative measurement of how much
+of the prescriptive collapse role framing recovers within a fixed
+output format. The answer, on the personal-decision corpus tested
+here, is approximately 4\%: the descriptive component is accessible
+primarily through interface changes, not framing changes.
+
+\subsection{Locating the literature}
+\label{sec:disc_locating}
+
+Together with \citet{zhang-2025-verbalized-sampling} on typicality and
+\citet{sivaprasad-2025-descriptive-prescriptive} on descriptive-
+prescriptive sampling, the interface-level versus training-level
+distinction organises the literature around a sharper question: at
+what points in the LLM stack can pluralism be recovered, and at what
+cost? Training-level interventions — RLHF revision, fine-tuning,
+distributional moral probing \citep{russo-2026-pluralistic} — are
+expensive and slow. Interface-level interventions are prompt-only and
+fast. Our answer locates the easiest recovery point at the output
+interface, and the existing accounts specify the mechanisms by which
+the interface produces the collapse in the first place.
+
+%% -----------------------------------------------------------------------
+\section{Deployment implications}
+\label{sec:disc_deployment}
+
+If the alignment gap on personal-decision advice is primarily an
+interface-level phenomenon, the interface-level versus training-level
+distinction translates directly into deployment practice: the most
+effective interventions are prompt-level, not retraining-level. Five
+concrete recommendations follow, addressed to three audiences.
+
+\subsection{For advice-system designers}
+\label{sec:disc_designers}
+
+\paragraph{Recommendation 1: Query for distributions, not point
+predictions.} When deploying an LLM as an advisor on a contested
+binary decision, replace the forced-choice prompt with one that
+elicits a probability distribution over options. The exact prompt
+used in \cref{sec:d1_vs}, which produced 94--101\% entropy recovery
+across four models, was:
+
+\begin{quote}\small\ttfamily
+\{post\_text\} \\
+\\
+The two options being considered are: \\
+Option A: \{option\_risky\} \\
+Option B: \{option\_safe\} \\
+\\
+Output ONLY the two probability lines below, in this exact format. \\
+P(Option A) = 0.XX, P(Option B) = 0.XX.
+\end{quote}
+
+The instruction discipline (``Output ONLY''; ``in this exact format'')
+is load-bearing: pilot runs showed that softer instructions produced
+reasoning preambles in two of four models. Downstream systems can then
+treat the two probabilities as a calibrated estimate of community
+recommendation rather than as a single committal answer.
+
+\paragraph{Recommendation 2: Treat single-answer outputs as
+systematically overconfident.} Even on genuinely ambiguous decisions
+where the Reddit community is roughly evenly divided, forced-choice
+LLM outputs collapse to near-100\% on one option (mean LLM entropy
+0.046 nats; \cref{sec:d1_baseline}). Downstream pipelines that consume
+LLM outputs as features — for example, recommender systems aggregating
+LLM responses across many users or many queries — should re-elicit a
+distribution before computing any aggregation. Aggregating collapsed
+forced-choice outputs systematically loses the information that
+matters for pluralism-aware recommendation.
+
+\paragraph{Recommendation 3: Role framing alone is insufficient.}
+Asking ``what would most people do?'' (oracle framing) rather than
+``what should I do?'' (advisor framing) produces only a 0.015
+reduction in absolute alignment gap, approximately 16 times smaller
+than the reduction from changing the output format. Designers seeking
+distributional alignment should combine descriptive framing with
+distribution-output queries rather than relying on framing alone. The
+Distribution Verbalization condition (\cref{sec:d1_vs}) is a working
+example of this combination.
+
+\subsection{For LLM benchmark designers}
+\label{sec:disc_benchmark}
+
+\paragraph{Recommendation 4: Report both single-answer and
+distributional metrics.} Benchmarks that score LLMs only on
+single-token forced-choice outputs systematically underestimate model
+calibration. A model that appears to have ``high confidence and high
+accuracy'' on a forced-choice benchmark may have well-calibrated
+internal beliefs that the benchmark format hides. Adding a
+distributional-output condition to existing benchmarks — even as a
+secondary metric — would surface the gap between what the model knows
+and what the benchmark allows it to express.
+
+\paragraph{Recommendation 5: Test on real, post-cutoff content.} The
+Pushshift-based corpus used here eliminates training-data contamination
+by construction: every post in the corpus was submitted after the
+knowledge cutoff of every model evaluated. Benchmark designers
+constructing distributional-alignment datasets should adopt similar
+contamination-control protocols, particularly when the alignment
+target is a community baseline that the model might plausibly have
+memorised from training data.
+
+\subsection{For RLHF research}
+\label{sec:disc_rlhf}
+
+The interface-level versus training-level distinction raises a
+question for training-level research that this thesis cannot answer.
+If the internal belief distribution is preserved through current
+post-training pipelines (as the VS recovery shows), why does forced-
+token sampling so reliably collapse it? Two candidate answers are
+worth investigating. The first is a decoding-time typicality bias
+\citep{zhang-2025-verbalized-sampling}: the argmax-favouring head used
+at deployment compresses the distribution, not the training itself.
+The second is an implicit role prior: RLHF, as developed in
+instruction-tuning pipelines \citep{ouyang-2022-instructgpt}, may
+teach the model that, when asked to give a single answer, it should
+commit to a single answer; the pluralism is preserved internally but
+interface-gated. The
+two mechanisms predict subtly different behaviour under
+intermediate-format interventions; distinguishing them is a target for
+training-level research.
+
+%% -----------------------------------------------------------------------
 \section{Limitations}
-\label{sec:limitations}
+\label{sec:disc_limitations}
 
-% Reddit ground truth: upvote-based risky_ratio may not reflect true preferences
-% Model version instability: provider models can change silently
-% Parse failures: ~2% for Claude personal (safety refusals on sensitive posts)
-% Health/social domain underpowered in D2
+Seven limitations require explicit acknowledgement. Each item names
+the limitation, explains why it does not undermine the headline
+finding, and ends with an explicit implication.
 
+\subsection{The Reddit community baseline is not a universal human reference}
+\label{sec:disc_lim_reddit}
+
+The human reference is the upvote-weighted distribution of comments
+on five education, five career, and four finance subreddits. This
+captures the views of vocal Reddit commenters
+\citep{sachdeva-2025-aita}, who skew young, technical, and politically
+progressive relative to the general population. r/personalfinance has well-documented FIRE-movement
+leanings; r/cscareerquestions is HCOL-tech-centric. Results sections
+use the term ``Reddit community consensus'' or ``upvote-weighted
+comment distribution'' rather than ``human consensus'' to mark this
+explicitly.
+\textbf{Implication:} our absolute alignment numbers describe LLM
+alignment with \emph{this community}, not with humanity in general.
+The order-of-magnitude ratio between output format and role framing,
+however, reflects mechanism strength rather than absolute alignment
+level, and is unlikely to be Reddit-specific. Replication with a
+representative-sample baseline is itemised as future work
+(\cref{sec:disc_fw_population}).
+
+\subsection{Gemini-as-annotator introduces measurement uncertainty}
+\label{sec:disc_lim_annotator}
+
+Stance classification of roughly 24,000 top-level comments and
+decision-feature extraction for 620 posts were performed by Gemini
+2.0 Flash Lite. The annotation introduces measurement error that
+propagates into the human baseline and into decision-feature subgroup
+analyses. Two design choices mitigate this. First, the annotator is
+outside the four study models, ruling out circular dependence between
+the LLM behaviour under test and the human reference. Second,
+inter-rater agreement against a 150-post manual sample was computed
+using Krippendorff's $\alpha$ \todo{fill in $\alpha$ values once
+manual coding complete}; targets with $\alpha < 0.70$ trigger prompt
+revision and re-annotation.
+\textbf{Implication:} the headline finding (VS entropy recovery) is
+robust to annotator error because it does not depend on stance
+classification — LLM entropy under VS is computed directly from LLM
+probability outputs, not from Gemini labels. Subgroup analyses that
+depend on Gemini-assigned decision features are more sensitive and
+are interpreted with the corresponding caution.
+
+\subsection{Four post-trained models, no base-model comparison}
+\label{sec:disc_lim_basemodel}
+
+The four study models are all post-trained — instruction-tuned and
+RLHF-aligned (or analogously aligned by Constitutional AI in the
+Claude case). Base-model comparisons were infeasible because none of
+the four developers expose a base-model API endpoint. The design
+therefore cannot distinguish whether the entropy collapse under forced
+choice is a property of post-training specifically or a property of
+all autoregressive language models. \citet{kirk-2024-rlhf-diversity}
+provide evidence that base models exhibit greater output diversity than
+their post-trained counterparts, which is consistent with a post-
+training contribution to the collapse.
+\textbf{Implication:} the interface-level claim is well-supported
+within the post-trained model class but does not isolate the
+contribution of post-training itself. Future work with open-weight
+base versions would close this gap (\cref{sec:disc_fw_base}).
+
+\subsection{Binary forced choice simplifies real advice}
+\label{sec:disc_lim_binary}
+
+Real advice often takes the form of conditional recommendations
+(``depends on X''), risk-stratified explanations, or
+acknowledgement-of-uncertainty. Our binary forced-choice protocol
+flattens this nuance. The corpus is restricted to posts where Gemini
+Call A identified a genuine binary decision; many real personal
+decisions do not fit this structure.
+\textbf{Implication:} the alignment gap measured here is the gap
+between LLM and human \emph{position taken}, not between LLM and
+human advice content. The 94--101\% entropy recovery shows that LLMs
+can express distributional uncertainty when the interface asks for
+it; it does not show that LLMs match human advisors in conditional
+reasoning or risk-stratified explanation. A richer ground truth
+incorporating qualitative advice features is a clear extension.
+
+\subsection{The Direction 2 effect size is small, with corresponding statistical limits}
+\label{sec:disc_lim_d2_power}
+
+The oracle-versus-advisor comparison gives a paired-bootstrap mean
+difference of $\Delta = -0.015$ with 95\% confidence interval
+$[-0.025, -0.005]$. The ratio with the Direction 1 output-format
+effect ($\Delta = -0.235$) carries its own uncertainty: the point
+ratio is 15.7, and the bootstrap-derived interval on the ratio
+plausibly spans roughly 14 to 18. The chapter therefore characterises the
+ratio as an order-of-magnitude claim rather than a precise point
+estimate.
+\textbf{Implication:} the qualitative claim (output format dominates
+role framing by an order of magnitude) is robust to this uncertainty;
+the precise ratio is not, and should not be over-interpreted.
+
+\subsection{Verbalized Sampling recovery is measured on ambiguous posts}
+\label{sec:disc_lim_ambiguous}
+
+The 94--101\% recovery rates are computed on the 132-post subset
+where the human risky ratio falls in $[0.20, 0.80]$ — the ambiguous
+subset where the upvote-weighted comment distribution is itself
+genuinely divided. On highly-consensus posts (where the community
+already agrees), the entropy gap to recover is small and the recovery
+metric is correspondingly less informative.
+\textbf{Implication:} the strong recovery claim applies specifically
+to ambiguous decisions. We hold that ambiguous decisions are the case
+that matters most for deployment — people seek advice precisely when
+decisions are contested — but the generalisation to high-consensus
+decisions is weaker than the headline number suggests.
+
+\subsection{Mistral's heterogeneous response to role framing is unexplained}
+\label{sec:disc_lim_mistral}
+
+Mistral was the one of four models in which oracle framing
+\emph{increased} absolute alignment gap relative to advisor
+(\cref{sec:d2_models}). We do not have a confident mechanistic
+explanation for this divergence. Two candidate hypotheses — less
+aggressive RLHF post-training, or differing instruction-tuning data
+composition — are not directly testable without training details
+that Mistral does not publish in sufficient detail.
+\textbf{Implication:} the cross-model robustness of the role-framing
+claim is weaker than the cross-model robustness of the output-format
+claim. The interface-level versus training-level distinction
+predicts exactly this pattern: interface-level effects depend on the
+output-surface constraint that every model faces equally, while
+training-level effects depend on post-training choices that vary
+across developers. The Mistral divergence is consistent with the
+distinction itself rather than a threat to it.
+
+%% -----------------------------------------------------------------------
 \section{Future work}
-\label{sec:future_work}
+\label{sec:disc_future_work}
 
-% Extend to more domains; larger N per cell
-% Human annotation study to validate risky_ratio
-% Test with open-weight models for reproducibility
+Five extensions follow from the limitations above.
+
+\paragraph{Clean factorial 2$\times$2.} The DV condition in
+\cref{sec:d1_vs} approximates ``oracle + distribution'' but conflates
+descriptive framing with distributional output, and the
+oracle/single-token cell in \cref{tab:disc_2x2} uses a different
+post sample from the other three cells. A deliberate factorial design
+with four cells (advisor/forced, advisor/distribution, oracle/forced,
+oracle/distribution) on a single post sample would isolate the
+interaction effect and provide directly comparable cell estimates.
+
+\paragraph{Base-model comparison.}
+\label{sec:disc_fw_base}
+Comparing forced-choice entropy between base and post-trained versions
+of the same model — for example, Llama base versus Llama Instruct on
+the same posts and decoding settings — would directly test whether
+the forced-choice collapse is specifically a post-training artifact or
+a property of autoregressive language models more broadly. Open-weight
+base models make this immediately feasible.
+
+\paragraph{Beyond binary choice.} Many real decisions involve more
+than two options: job offers among several candidates, investment
+allocations across asset classes, university choices in a top-k set.
+Extending the Verbalized Sampling framework to $k$-option decisions
+($k > 2$) tests whether the interface-level recovery holds at higher
+choice cardinality, and whether the same prompt template generalises
+without modification.
+
+\paragraph{Multi-turn deliberation.} Real advice often unfolds across
+multiple conversational turns: the user clarifies the situation, the
+model asks questions, both refine the framing. A multi-turn version of
+the experiment could test whether LLM pluralism is preserved across
+deliberation, or whether each forced-choice turn re-applies the
+collapse and the model's effective belief narrows turn by turn.
+
+\paragraph{Population-representative baseline.}
+\label{sec:disc_fw_population}
+Replicating the corpus methodology with a Prolific or
+representative-sample stance baseline would address the Reddit-
+community limitation (\cref{sec:disc_lim_reddit}) directly and test
+the generalisation of the order-of-magnitude ratio claim. The
+infrastructure costs are non-trivial — stance annotation by a
+representative panel scales differently from Pushshift-based comment
+aggregation — but the experiment is well-defined.
+
+%% -----------------------------------------------------------------------
+\section{Bridge to the conclusion}
+\label{sec:disc_bridge}
+
+Across two experiments on four post-trained LLMs and 620 personal-
+decision posts, the evidence converges on one mechanistic finding:
+LLM advice collapse is predominantly an interface-level phenomenon.
+The model's internal belief distribution is preserved through current
+post-training, but forced-choice interfaces compress it into near-
+deterministic outputs. A prompt-only intervention recovers 94--101\%
+of the entropy gap; a role-framing intervention recovers approximately
+4\% of the absolute alignment gap. The order-of-magnitude difference
+is the empirical signature of the interface-level versus training-
+level distinction developed in this chapter.
+\Cref{chap:conclusion} restates what this finding contributes to the
+literature on pluralistic alignment, and what it does not.
