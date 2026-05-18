@@ -74,6 +74,54 @@ LLM) on the ambiguous subset was 3.58, which falls in the range
 conventionally labelled extremely large. The gap cannot be explained by
 sampling noise.
 
+Beyond the ambiguous subset reported above, the full 620-post advisor
+baseline (2{,}472 qualified post--model cells) allows a mixed-effects
+regression of absolute alignment gap on the four annotated decision
+features plus a sampling-frame control for domain
+(\cref{sec:m_mixedlm}, \cref{eq:m_mixedlm}). The full coefficient
+table is reported in \cref{app:regression-table}; two structural
+findings of the regression bear on the interpretation of the
+alignment gap as a whole.
+
+\textit{Variance decomposition.} The fitted variance components are
+unequal by two orders of magnitude. The post-level intercept variance
+is $\sigma^2_{\text{post}} = 0.001$ (essentially zero); the
+model-level intercept variance is $\sigma^2_{\text{model}} = 0.091$;
+the residual variance is $\sigma^2_{\text{resid}} = 0.052$. Variance
+attributable to post identity is roughly 1\% of total variance;
+variance attributable to model identity is roughly 63\%. Conditional
+$R^2$ (fixed plus random effects) is 0.65; marginal $R^2$ (fixed
+effects alone) is 0.03. Within a single LLM, the gap on a given post
+is therefore close to the gap that LLM produces on any other post;
+the dominant axis of variation runs between models, not between
+posts. We return to this observation in
+\cref{sec:disc_interface_training}.
+
+\textit{Content moderation.} Three of the four candidate content
+features show no significant moderation: \texttt{reversibility}
+($p = 0.51$ for partially reversible vs reversible reference;
+$p = 0.85$ for irreversible), \texttt{resource\_constraint} (smallest
+$p = 0.12$ for the \texttt{social} contrast), and \texttt{ses\_level}
+($p > 0.66$ for both contrasts). \texttt{time\_horizon} is a small
+but significant moderator: posts with a short time horizon show an
+alignment gap larger by $\Delta = 0.078$ (95\% CI
+$[0.013, 0.144]$, $p = 0.019$) than long-horizon posts after
+controlling for other features and both random intercepts. The
+\texttt{domain} sampling-frame control is itself non-trivial ---
+finance and education posts show smaller gaps than the career
+reference category ($\Delta = -0.102$, $p = 0.002$ and
+$\Delta = -0.086$, $p = 0.051$ respectively) --- but this reflects
+which subreddits decision-domain communities are posting from, not a
+content-level property of the posts themselves. The structural
+account of the alignment gap therefore holds in dominance but admits
+weak content modulation at the margin: time horizon, of the four
+content features tested, is the one through which content reaches
+alignment behaviour, and the magnitude of its effect is about a
+third of the output-format effect ($\Delta = -0.235$, reported in
+\cref{sec:d1_vs} of this chapter) and more than five times larger
+than the role-framing effect ($\Delta = -0.015$,
+\cref{chap:direction2}).
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig41_distribution_shape/out.pdf}
