@@ -244,6 +244,24 @@ conservative, dependent vs independent) — and one
 the post body (income mentions, financial-stress language, education
 level). The full Call B prompt appears in Appendix~A.4.
 
+The four decision features and the SES indicator serve as candidate
+moderators of the alignment gap. The methodological role of each
+feature differs. \texttt{reversibility}, \texttt{time\_horizon},
+\texttt{resource\_constraint}, and \texttt{ses\_level} are post-level
+annotations extracted from the post body and treated as candidate
+content moderators in the mixed-effects regression of
+\cref{sec:m_mixedlm}. \texttt{domain} is a sampling-frame variable
+(determined by which subreddit the post originated from) and enters
+the regression as a control for between-domain composition rather than
+as a content moderator. \texttt{trade\_off\_type} is excluded from the
+regression because 91.6\% of qualified-cell posts fall in a single
+category (\texttt{risk\_vs\_stability}), which precludes stable
+estimation of its contrast effects. \texttt{ses\_level} is borderline
+by the same criterion (87.6\% in \texttt{mid}) and is retained for
+completeness; its coefficients are reported in
+\cref{app:regression-table} with appropriate caution. Regression
+results are reported in \cref{sec:d1_baseline}.
+
 \subsection{Validation: Krippendorff's $\alpha$}
 \label{sec:m_validation}
 
@@ -569,3 +587,43 @@ features and SES as fixed effects, and post and model as random
 intercepts. Variance components are interpreted to assess whether
 content features explain meaningful variance after accounting for
 post-level and model-level random variation.
+
+\subsection{Mixed-effects regression for feature moderation}
+\label{sec:m_mixedlm}
+
+To assess whether the alignment gap is moderated by content features
+or by socioeconomic context, we fit a linear mixed-effects model with
+absolute alignment gap as outcome and crossed random intercepts on
+post identity and model identity:
+\begin{equation}
+  \mathrm{abs\_gap}_{ij}
+    = \beta_0
+      + \beta_1\,\mathrm{reversibility}_i
+      + \beta_2\,\mathrm{time\_horizon}_i
+      + \beta_3\,\mathrm{resource\_constraint}_i
+      + \beta_4\,\mathrm{ses\_level}_i
+      + \beta_5\,\mathrm{domain}_i
+      + u_i + v_j + \varepsilon_{ij},
+  \label{eq:m_mixedlm}
+\end{equation}
+where $i$ indexes posts, $j$ indexes the four study models, $u_i$ is
+the post-level random intercept, $v_j$ is the model-level random
+intercept, and $\varepsilon_{ij}$ is the residual. The two random
+intercepts are crossed, not nested. The model is estimated by
+restricted maximum likelihood using the \texttt{statsmodels}
+implementation in Python, with the crossed-effect parameterisation
+encoded through the variance-components formula
+(\texttt{vc\_formula}) interface. The \texttt{trade\_off\_type}
+feature is excluded because 91.6\% of qualified cells fall in a
+single category; \texttt{ses\_level} is borderline (87.6\% in
+\texttt{mid}) but retained as a fixed effect for completeness.
+\texttt{domain} enters as a sampling-frame control, not as a content
+moderator.
+
+The post-level random intercept $u_i$ is retained in the
+specification even where its estimated variance is near zero. This
+is a substantive design choice rather than an oversight: the
+variance estimate is itself the quantity of interest for the
+question of whether per-post idiosyncrasies dominate alignment
+variation. Reporting that variance as estimated, including when it
+is near zero, is the answer to that question.
