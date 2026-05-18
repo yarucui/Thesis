@@ -188,6 +188,22 @@ collapse on personal decisions is predominantly an interface
 phenomenon. The model encodes pluralism in its internal
 representation; forced-choice queries do not ask for it.
 
+The mixed-effects regression of \cref{sec:d1_baseline} provides a
+second line of support for the interface-level versus training-level
+distinction. Across the 620-post advisor baseline, the variance in
+absolute alignment gap is concentrated at the model level
+($\sigma^2_{\text{model}} = 0.091$, roughly 63\% of total variance),
+not at the post level ($\sigma^2_{\text{post}} = 0.001$, roughly
+1\%) and not in any content-feature contrast (three of four candidate
+moderators non-significant; time horizon partially significant at
+$\Delta = 0.078$, $p = 0.019$). Within any one of the four study
+models, alignment behaviour is approximately invariant across the
+posts it answers. The variation that exists is between models, which
+is the locus where post-training pipelines differ. This pattern is
+the form an interface-level phenomenon should take: the gap is a
+property of how each model is interfaced with the question rather
+than a property of the question content.
+
 \subsection{What the distinction does not claim}
 \label{sec:disc_not_claim}
 
@@ -534,6 +550,27 @@ output-surface constraint that every model faces equally, while
 training-level effects depend on post-training choices that vary
 across developers. The Mistral divergence is consistent with the
 distinction itself rather than a threat to it.
+
+\subsection{Partial content moderation by time horizon}
+\label{sec:disc_lim_time_horizon}
+
+The mixed-effects regression in \cref{sec:d1_baseline} identifies one
+significant content moderator: posts with a short time horizon have
+an alignment gap larger by $\Delta = 0.078$ ($p = 0.019$) than posts
+with a long time horizon, after controlling for other annotated
+features and crossed random intercepts on post and model. The effect
+is real but small relative to the two interventions this thesis
+foregrounds: roughly a third of the output-format effect
+($\Delta = -0.235$, \cref{chap:direction1}) and five times the
+magnitude of the role-framing effect ($\Delta = -0.015$,
+\cref{chap:direction2}).
+\textbf{Implication:} the structural account of the alignment gap
+holds in dominance but admits weak content modulation at the margin.
+The thesis claim that the gap is interface-driven rather than
+content-driven is therefore an accurate description of where most of
+the variance sits, not a claim that no content feature is ever
+predictive. A targeted study of short-horizon decisions and how LLM
+advisers respond to them could profitably build on this observation.
 
 %% -----------------------------------------------------------------------
 \section{Future work}
