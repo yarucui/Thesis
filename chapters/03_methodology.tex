@@ -23,8 +23,8 @@ population; we treat this distinction explicitly throughout
 \textit{Distributional alignment outcome.} We operationalise alignment
 as the distance between the LLM's choice distribution and the human
 reference distribution, not as agreement with a modal answer
-\citep{russo-2026-pluralistic}. Three complementary metrics —
-position distance, entropy gap, and KL divergence — are defined in
+\citep{russo-2026-pluralistic}. Three complementary metrics,
+position distance, entropy gap, and KL divergence, are defined in
 \cref{sec:m_outcomes}.
 
 \textit{Cross-model design.} Four post-trained LLMs from four
@@ -33,8 +33,8 @@ generalise across post-training paradigms rather than reflect a
 property of any single pipeline. Model identifiers appear in
 \cref{sec:m_models}.
 
-\textit{Mechanism manipulations.} Two prompt-level manipulations —
-output format (Direction 1) and epistemic role (Direction 2) — vary
+\textit{Mechanism manipulations.} Two prompt-level manipulations,
+output format (Direction 1) and epistemic role (Direction 2), vary
 independently against the same baseline, isolating two candidate
 mechanisms of the alignment gap.
 
@@ -83,9 +83,9 @@ all 17 subreddits and their post counts in the final corpus.
 
 All four study models have knowledge cutoffs no later than 2025-08
 (Claude Sonnet 4.6 being the most recent). Because every post in the
-corpus was submitted in 2026-03, post-training contamination — the
+corpus was submitted in 2026-03, post-training contamination, the
 concern that an LLM has memorised comment distributions from its
-training data — is ruled out by construction. This is a stronger
+training data, is ruled out by construction. This is a stronger
 guarantee than the post-cutoff filters used in comparable moral-
 judgment benchmarks \citep{russo-2026-pluralistic}, which rely on
 filter-then-retrain heuristics rather than a hard chronological gap
@@ -211,7 +211,7 @@ annotator approaches have shown competitive agreement with human coders
 on text annotation tasks where the construct is well-specified
 \citep{gilardi-2023-llm-annotator, ziems-2024-llm-coder}.
 
-\subsection{Gemini Call A — decision-post gating}
+\subsection{Gemini Call A, decision-post gating}
 \label{sec:m_callA}
 
 The first Gemini call evaluated whether each post represented a
@@ -220,14 +220,14 @@ Inputs were post title and selftext; outputs were
 \texttt{is\_genuine\_decision} (boolean), \texttt{option\_risky}
 (string), \texttt{option\_safe} (string), and \texttt{domain\_match}
 (boolean). The binarisation rule labels the choice with higher variance
-in outcome — higher upside but also higher potential cost — as
+in outcome, higher upside but also higher potential cost, as
 \texttt{option\_risky}, and the more conservative choice as
 \texttt{option\_safe}. Output was constrained to a JSON schema; posts
 returning malformed JSON or \texttt{is\_genuine\_decision = false} were
 dropped from the corpus. The full Call A prompt appears in
 Appendix~A.3.
 
-\subsection{Gemini Call B — stance, features, SES}
+\subsection{Gemini Call B, stance, features, SES}
 \label{sec:m_callB}
 
 The second Gemini call classified each top-level comment by stance and
@@ -235,11 +235,11 @@ annotated each post with decision features and a socioeconomic-status
 indicator. For each top-level comment, the output was
 \texttt{stance} $\in \{$risky, safe, neutral$\}$ and a
 \texttt{confidence} score in $[0, 1]$. For each post, the output was
-four decision-feature labels — \texttt{reversibility} (reversible /
+four decision-feature labels, \texttt{reversibility} (reversible /
 irreversible), \texttt{time\_horizon} (short / long),
 \texttt{resource\_constraint} (tight / loose), and
 \texttt{trade\_off\_type} (short-term vs long-term, aggressive vs
-conservative, dependent vs independent) — and one
+conservative, dependent vs independent), and one
 \texttt{ses\_level} (low / mid / high) inferred from natural cues in
 the post body (income mentions, financial-stress language, education
 level). The full Call B prompt appears in Appendix~A.4.
@@ -283,7 +283,7 @@ Gemini prompt is revised and scoring is re-run before any downstream
 analysis.
 
 Validation results:
-% PLACEHOLDER_KRIPPENDORFF — both alpha values below are preview values
+% PLACEHOLDER_KRIPPENDORFF, both alpha values below are preview values
 % pending manual coding. Search for "PLACEHOLDER_KRIPPENDORFF" to swap in
 % the real numbers and remove these comments.
 \begin{itemize}
@@ -346,13 +346,13 @@ which the Direction 1 and Direction 2 interventions are compared
 advisor framing of Direction 2 is the reused baseline noted in
 \cref{sec:d2_method}.
 
-\subsection{Direction 1 — Verbalized Sampling diagnostic}
+\subsection{Direction 1, Verbalized Sampling diagnostic}
 \label{sec:m_d1}
 
 Direction 1 tested whether the entropy collapse observed at baseline
 is recoverable through an output-format manipulation. The analytical
 sample was the 132 posts with
-\texttt{human\_risky\_ratio} $\in [0.20, 0.80]$ — the ambiguous
+\texttt{human\_risky\_ratio} $\in [0.20, 0.80]$, the ambiguous
 subset where the upvote-weighted comment distribution is itself
 genuinely divided. Restricting to ambiguous posts isolates cases where
 distributional alignment is most informative; posts on which the
@@ -379,7 +379,7 @@ All four condition prompts are reproduced verbatim in Appendix~A.5.
 Total new calls (excluding reused baseline):
 $132 \times 4 \times (3 + 3 + 20) = 13{,}728$.
 
-\subsection{Direction 2 — Role framing}
+\subsection{Direction 2, Role framing}
 \label{sec:m_d2}
 
 Direction 2 tested whether the LLM's assigned epistemic role
@@ -446,7 +446,7 @@ exception. Baseline failure rates ranged from 0.00\% (GPT) to 1.65\%
 (Llama). Direction 2 failure rates ranged from 0.02\% (GPT) to 3.24\%
 (Llama under the personal framing). The single elevated case was
 Llama on the Direction 1 high-temperature control, where 245 of 2,640
-responses (9.3\%) failed strict parsing — at $T = 1.2$ the model
+responses (9.3\%) failed strict parsing, at $T = 1.2$ the model
 occasionally produced reasoning preambles before committing to a
 choice. The implications of this elevated failure rate are addressed
 in \cref{chap:discussion}.
