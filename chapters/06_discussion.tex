@@ -551,6 +551,27 @@ training-level effects depend on post-training choices that vary
 across developers. The Mistral divergence is consistent with the
 distinction itself rather than a threat to it.
 
+\subsection{Partial content moderation by time horizon}
+\label{sec:disc_lim_time_horizon}
+
+The mixed-effects regression in \cref{sec:d1_baseline} identifies one
+significant content moderator: posts with a short time horizon have
+an alignment gap larger by $\Delta = 0.078$ ($p = 0.019$) than posts
+with a long time horizon, after controlling for other annotated
+features and crossed random intercepts on post and model. The effect
+is real but small relative to the two interventions this thesis
+foregrounds: roughly a third of the output-format effect
+($\Delta = -0.235$, \cref{chap:direction1}) and five times the
+magnitude of the role-framing effect ($\Delta = -0.015$,
+\cref{chap:direction2}).
+\textbf{Implication:} the structural account of the alignment gap
+holds in dominance but admits weak content modulation at the margin.
+The thesis claim that the gap is interface-driven rather than
+content-driven is therefore an accurate description of where most of
+the variance sits, not a claim that no content feature is ever
+predictive. A targeted study of short-horizon decisions and how LLM
+advisers respond to them could profitably build on this observation.
+
 %% -----------------------------------------------------------------------
 \section{Future work}
 \label{sec:disc_future_work}
