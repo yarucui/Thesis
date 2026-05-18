@@ -7,8 +7,8 @@
 
 \Cref{chap:direction1} showed that asking an LLM to output a probability
 distribution recovers near-human entropy on personal-decision advice. A
-natural next question is whether the LLM's assigned role — prescriptive
-advisor or descriptive oracle — independently modulates the alignment
+natural next question is whether the LLM's assigned role, prescriptive
+advisor or descriptive oracle, independently modulates the alignment
 gap. If role framing produces an effect comparable in magnitude to
 output format, the deployment toolkit expands: practitioners would have
 two distinct levers to recover pluralism, and the mechanism of advice
@@ -38,7 +38,7 @@ intervention of this chapter awaits \cref{chap:discussion}.
 \label{sec:d2_hypothesis}
 
 Three lines of prior work motivate the hypothesis that an LLM's
-epistemic role — what it is asked to do with a question — substantially
+epistemic role, what it is asked to do with a question, substantially
 shapes its output, independently of the output format.
 
 \subsection*{Theoretical motivation: descriptive versus prescriptive sampling}
@@ -79,7 +79,7 @@ under prescriptive cues \citep{lin-2025-parental-bias}.
 
 In deployment, users ask LLMs both kinds of questions. They ask ``what
 should I do'' (advice-seeking, prescriptive) and ``what would most
-people in my position do'' (calibration-seeking, descriptive) — sometimes
+people in my position do'' (calibration-seeking, descriptive), sometimes
 within the same conversation. If role framing substantially modulates
 the alignment gap, then practitioners have a second prompt-level lever
 that is as actionable as the output-format intervention of
@@ -140,7 +140,7 @@ qualified cell required $n_\text{valid} \geq 6$ committal responses;
 \label{sec:d2_framing}
 
 Across 620 posts and four models, oracle framing produced a small but
-consistent reduction in alignment gap relative to advisor framing — a
+consistent reduction in alignment gap relative to advisor framing, a
 result that is statistically robust under FDR correction and small by
 conventional effect-size standards.
 
@@ -214,8 +214,8 @@ LLM--community alignment gap documented in \cref{sec:d1_baseline}.
 
 \subsection*{Entropy under framing}
 
-Mean LLM entropy rose with descriptive framing — from 0.045 nats under
-advisor to 0.072 nats under oracle, with personal at 0.091 nats — but
+Mean LLM entropy rose with descriptive framing, from 0.045 nats under
+advisor to 0.072 nats under oracle, with personal at 0.091 nats, but
 all three values remained an order of magnitude below the 0.621 nats
 recovered by Verbalized Sampling on the ambiguous subset. The
 oracle-framing prompt loosens the entropy collapse slightly. It does
@@ -223,7 +223,7 @@ not lift it.
 
 \subsection*{An incidental observation on personal framing}
 
-Personal framing — asking the model what it would do — produced
+Personal framing, asking the model what it would do, produced
 slightly larger gaps than advisor framing ($\Delta = +0.012$,
 $p_\text{fdr} = 0.005$), the opposite of what a self-as-prescriptive
 reading would predict. The personal--advisor difference is small and
@@ -302,8 +302,8 @@ decisions.
 The oracle-versus-advisor effect is small at every level of community
 consensus on the underlying post, but its direction is not uniform. We
 stratified the qualified cells by the consensus label assigned in
-\cref{chap:methodology} — \texttt{high\_safe}, \texttt{ambiguous}, and
-\texttt{high\_risky} — and recomputed the oracle--advisor difference
+\cref{chap:methodology}, \texttt{high\_safe}, \texttt{ambiguous}, and
+\texttt{high\_risky}, and recomputed the oracle--advisor difference
 within each stratum.
 
 \begin{table}[t]
@@ -358,5 +358,5 @@ intervention. \Cref{chap:discussion} develops the implications of this
 ratio for the mechanism of LLM advice collapse and for deployment
 recommendations.
 
-What both directions together tell us about why LLM advice collapses —
-and how to fix it — is the subject of \cref{chap:discussion}.
+What both directions together tell us about why LLM advice collapses,
+and how to fix it, is the subject of \cref{chap:discussion}.
