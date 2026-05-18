@@ -1,0 +1,62 @@
+\appendix
+
+\chapter{Supplementary results}
+\label{chap:appendix}
+
+%% -----------------------------------------------------------------------
+\section{Mixed-effects regression coefficients}
+\label{app:regression-table}
+
+\Cref{tab:m_mixedlm_coefs} reports the fixed-effect coefficients, 95\%
+confidence intervals, and $p$-values from the mixed-effects regression
+defined in \cref{eq:m_mixedlm}. The model was estimated by restricted
+maximum likelihood on the 620-post advisor baseline (2{,}472 qualified
+post--model cells). Reference categories omitted from the table are:
+\texttt{reversibility} = \texttt{irreversible}, \texttt{time\_horizon}
+= \texttt{long}, \texttt{resource\_constraint} = \texttt{financial},
+\texttt{ses\_level} = \texttt{high}, \texttt{domain} = \texttt{career}.
+
+\begin{table}[h]
+  \centering
+  \caption{Fixed-effect coefficients from the mixed-effects regression
+    of absolute alignment gap on annotated decision features and SES,
+    with sampling-frame control for domain. The
+    \texttt{trade\_off\_type} feature is excluded due to 91.6\%
+    class imbalance.}
+  \label{tab:m_mixedlm_coefs}
+  \begin{tabular}{lrlc}
+    \toprule
+    Variable & Coefficient & 95\% CI & $p$ \\
+    \midrule
+    Intercept                  &  0.478 & [0.011, 0.944]    & 0.045$^{*}$ \\
+    \midrule
+    \multicolumn{4}{l}{\textit{reversibility (ref: irreversible)}} \\
+    \quad partially reversible &  0.039 & [$-$0.077, 0.155] & 0.511   \\
+    \quad reversible           & $-$0.011 & [$-$0.130, 0.108] & 0.854 \\
+    \midrule
+    \multicolumn{4}{l}{\textit{time\_horizon (ref: long)}} \\
+    \quad short                &  0.078 & [0.013, 0.144]    & 0.019$^{*}$ \\
+    \midrule
+    \multicolumn{4}{l}{\textit{resource\_constraint (ref: financial)}} \\
+    \quad geographic           &  0.584 & [$-$0.052, 1.220] & 0.072  \\
+    \quad health               & $-$0.036 & [$-$0.190, 0.117] & 0.642 \\
+    \quad social               & $-$0.101 & [$-$0.230, 0.029] & 0.126 \\
+    \quad time                 & $-$0.069 & [$-$0.154, 0.017] & 0.115 \\
+    \midrule
+    \multicolumn{4}{l}{\textit{ses\_level (ref: high; retained despite 87.6\% modal)}} \\
+    \quad low                  & $-$0.092 & [$-$0.547, 0.364] & 0.693 \\
+    \quad mid                  & $-$0.100 & [$-$0.547, 0.347] & 0.661 \\
+    \midrule
+    \multicolumn{4}{l}{\textit{domain (sampling-frame control; ref: career)}} \\
+    \quad education            & $-$0.086 & [$-$0.173, 0.000]   & 0.051 \\
+    \quad finance              & $-$0.102 & [$-$0.166, $-$0.038] & 0.002$^{**}$ \\
+    \quad health               & $-$0.254 & [$-$0.591, 0.083]   & 0.140 \\
+    \quad social               &  0.007 & [$-$0.205, 0.219]   & 0.948 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Variance components: $\sigma^2_{\text{post}} = 0.001$,
+$\sigma^2_{\text{model}} = 0.091$, $\sigma^2_{\text{resid}} = 0.052$.
+Marginal $R^2 = 0.032$; conditional $R^2 = 0.652$. Significance:
+${}^{*}\, p < 0.05$, ${}^{**}\, p < 0.01$.
