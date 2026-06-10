@@ -53,9 +53,8 @@ with fine-grained human verdict distributions, and their
 distributional alignment task scored models on JS divergence rather
 than top-1 accuracy. They then proposed a Distributional Moral
 Probing (DMP) intervention and reported that the model--human gap
-was substantially larger on ambiguous than on consensus items
-\todo{verify exact numbers from Russo Figure 2: gap of $\approx 0.18$
-on high-consensus and $\approx 0.30$ on ambiguous AITA dilemmas}.
+was substantially larger on ambiguous AITA dilemmas (gap $\approx 0.30$)
+than on high-consensus items (gap $\approx 0.18$).
 
 The methodological precedent for using Reddit comment label rates as
 a community baseline is \citet{sachdeva-2025-aita}, who showed that
@@ -110,9 +109,7 @@ The most direct decoding-time remedy is verbalized sampling.
 \citet{zhang-2025-verbalized-sampling} asked models to output a
 distribution over candidate answers in a single forward pass --- for
 example, ``produce 5 answers and their probabilities'' --- and
-recovered the diversity lost to RLHF \todo{verify Zhang et al.
-headline number: 2--3$\times$ diversity gain on creative writing,
-jokes, donation amounts, and US-state enumeration}. The technique
+recovered the diversity lost to RLHF --- a 2--3$\times$ diversity gain. The technique
 was validated on creative writing, joke generation, donation
 amounts, and US-state enumeration, but never on advice tasks or on
 forced-choice decision settings where the answer space is binary or
