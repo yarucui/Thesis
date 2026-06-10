@@ -481,7 +481,12 @@ $p_{\text{llm}} = n_A / n_{\text{valid}}$, where $n_A$ is the count of
 Option A responses across $N$ samples and $n_{\text{valid}}$ is the
 count of parseable responses.
 
-\textit{Position gaps.} The signed and absolute position gaps are
+\textit{Position gaps.} The absolute gap is the simplest of the three
+measures: the difference between the fraction of model samples that
+favour the riskier option and the fraction of the human community that
+favours it. A value of 0 means the model and the community lean the same
+way to the same degree; 0.45 means they differ by 45 percentage points.
+The signed and absolute position gaps are
 \begin{equation}
   \texttt{mean\_gap} = p_{\text{llm}} - p_{\text{human}},
   \qquad
@@ -491,8 +496,11 @@ count of parseable responses.
 The absolute gap is the primary outcome for pairwise hypothesis tests
 in \cref{chap:direction1} and \cref{chap:direction2}.
 
-\textit{Binary Shannon entropy.} The Shannon entropy of a Bernoulli
-distribution with parameter $p$, in nats, is
+\textit{Binary Shannon entropy.} Entropy measures how spread out a
+two-way choice distribution is. It is highest when the split is 50/50,
+where there is maximal uncertainty about which option will be chosen,
+and near zero when the responses are unanimous. The Shannon entropy of
+a Bernoulli distribution with parameter $p$, in nats, is
 \begin{equation}
   H(p) = -p \log p - (1 - p) \log (1 - p),
   \label{eq:m_entropy}
@@ -508,7 +516,10 @@ bounded above by $\ln 2 \approx 0.693$
 positive values indicate that the LLM distribution is more peaked
 than the human distribution on the same post.
 
-\textit{KL divergence with Laplace smoothing.} The directional KL
+\textit{KL divergence with Laplace smoothing.} KL divergence measures
+how far the model's choice distribution sits from the human one: it is
+zero when the two distributions coincide and grows as the model places
+confident mass where the community does not. The directional KL
 divergence from the human distribution to the LLM distribution is
 \begin{equation}
   \mathrm{KL}(p_{\text{human}} \| p_{\text{llm}}) = p \log \frac{p}{q} + (1 - p) \log \frac{1 - p}{1 - q},
