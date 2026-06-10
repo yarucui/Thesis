@@ -1,0 +1,44 @@
+%% Thesis abstract (front matter). No internal-state claims: all results
+%% are scoped to observable output behaviour. Numbers are the locked
+%% figures from CLAUDE.md / data/.
+\begin{abstract}
+Large language models are increasingly deployed as advisors on contested
+personal decisions, yet they tend to collapse to a single recommendation
+precisely where human communities are genuinely divided. This thesis asks
+whether this pluralistic gap is driven by the content of the decision, by
+the role the model is assigned, or by the format in which its answer is
+elicited. Because token-level probabilities were never accessed, every
+claim is scoped to observable output behaviour rather than to any internal
+representation.
+
+We construct a corpus of 620 real Reddit decision posts spanning education,
+career, and finance, each submitted after the knowledge cutoff of every
+model evaluated, which rules out training contamination by construction.
+The upvote-weighted distribution of community comments on each post serves
+as the alignment reference. Four post-trained large language models from
+four developers are evaluated under a forced binary choice and under two
+prompt-level interventions: a change of output format (Verbalized Sampling,
+applied to the 132 ambiguous posts on which the community is itself split)
+and a change of epistemic role (advisor, oracle, and personal framings,
+applied to the full corpus). Differences are tested by paired bootstrap
+with Benjamini--Hochberg correction, and candidate content moderators by
+mixed-effects regression.
+
+Under forced choice the models are near-deterministic (mean entropy 0.046
+nats) where the community is broad (0.621 nats). Eliciting a distribution
+recovers 94--101\% of this entropy gap across all four models, whereas the
+role-framing manipulation is statistically detectable but roughly sixteen
+times smaller (a reduction of 0.235 versus 0.015 in absolute alignment
+gap). Decision-content features, including reversibility, time horizon,
+resource constraint, and socioeconomic context, show no significant
+moderation. The pluralistic gap is therefore format-dependent and
+interface-recoverable: an alignment failure of deployment rather than of
+training, addressable by how the question is asked rather than by
+retraining. These results characterise alignment with the upvote-weighted
+Reddit community used here, not with humanity in general.
+
+\vspace{1em}
+\noindent\textbf{Keywords:} pluralistic alignment; large language models;
+verbalized sampling; output format; decision advice; distributional
+alignment; RLHF.
+\end{abstract}
