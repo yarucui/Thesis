@@ -40,16 +40,24 @@ nearly degenerate. We quantify this gap and report the per-model
 entropy values in \cref{chap:direction1}.
 
 The puzzle is mechanism. Two explanations are observationally similar
-in the standard setup but have opposite deployment consequences. The
-first is \emph{belief collapse}: the model's internal posterior over
-options is genuinely narrow, in which case alignment requires
-retraining or new preference data \citep{kirk-2024-rlhf-diversity}.
-The second is \emph{decoding collapse}: the internal posterior is
-broad, but a forced single-token answer interface discards everything
-except the mode \citep{zhang-2025-verbalized-sampling}. The first is a
-training-level problem and is expensive to fix; the second is a
-deployment-level problem and is fixable with a prompt change. Standard
-benchmarks elicit a forced choice and so cannot tell the two apart.
+under a forced choice but have opposite deployment consequences, and
+both are stated at the level of observable behavior. The first is
+\emph{format-invariant expression}: the model's elicited distribution
+over options stays peaked no matter how it is queried, in which case
+alignment requires retraining or new preference data
+\citep{kirk-2024-rlhf-diversity}. The second is \emph{format-dependent
+expression}: the model expresses a peaked distribution under a forced
+single-token answer but a broad one when the format permits, so the
+forced-choice interface discards everything except the mode
+\citep{zhang-2025-verbalized-sampling}. The first would be a
+training-level problem and expensive to fix; the second is a
+deployment-level problem, fixable with a prompt change. Standard
+benchmarks elicit only a forced choice and so cannot tell the two
+apart. Recovering a broad distribution under elicitation does not
+establish that a broad distribution pre-existed the query in the
+model's internal state; it shows the model can express such a
+distribution when the format permits. Our design speaks to behavior,
+not representation.
 
 A parallel literature attributes the gap to role framing: models cast
 as advisors are said to behave more prescriptively than models cast as

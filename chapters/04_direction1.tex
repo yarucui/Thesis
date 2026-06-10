@@ -127,30 +127,34 @@ remainder of this chapter tests.
 The baseline gap admits two qualitatively different explanations with
 opposite deployment implications.
 
-\textbf{H$_{\text{decoding}}$ (Decoding collapse).} The model's internal
-belief distribution over the two options is broad, but the forced-choice
-sampling process at temperature 0.7 systematically discards this breadth,
-producing a near-deterministic output. Under this hypothesis, the collapse
-is an artifact of the output interface; the model's underlying knowledge
-of pluralism is intact. The fix is a prompt-level change that permits the
-model to express a distribution rather than commit to a single token.
+\textbf{H$_{\text{format-dep}}$ (Format-dependent expression).} The
+model's elicited distribution over the two options is broad under a
+format that permits a distribution, but the forced-choice format at
+temperature 0.7 systematically discards this breadth, producing a
+near-deterministic output. Under this hypothesis, the collapse is an
+artifact of the output format; the model can express pluralism when the
+format permits. The fix is a prompt-level change that permits the model
+to express a distribution rather than commit to a single token. This is
+a claim about output behavior under different formats, not about the
+model's internal state.
 
-\textbf{H$_{\text{belief}}$ (Belief collapse).} The model's internal
-belief distribution is itself collapsed — reinforcement learning from
-human feedback has compressed the probability mass over advice options
-into a single modal answer \citep{kirk-2024-rlhf-diversity}. A
-theoretical mechanism for this compression is the typicality bias
-identified by \citet{chung-2025-soft-preference}: the KL regulariser in
-PPO pushes the reward-maximising policy toward modal completions,
-systematically discounting minority-but-admissible answers. Under this
-hypothesis, the collapse is intrinsic to the model; no prompt-level
+\textbf{H$_{\text{format-inv}}$ (Format-invariant expression).} The
+model's expressed distribution stays peaked regardless of output
+format — reinforcement learning from human feedback has compressed the
+probability mass over advice options into a single modal answer
+\citep{kirk-2024-rlhf-diversity}. A theoretical mechanism for this
+compression is the typicality bias identified by
+\citet{chung-2025-soft-preference}: the KL regulariser in PPO pushes the
+reward-maximising policy toward modal completions, systematically
+discounting minority-but-admissible answers. Under this hypothesis, the
+peakedness is invariant to the query format; no prompt-level
 intervention can recover pluralism without retraining on more diverse
 preference data.
 
 The deployment implications of the two hypotheses are distinct. If
-H$_{\text{decoding}}$ is correct, existing frontier models already
-encode the pluralism that aligned advice requires, and the fix costs
-one line of a prompt. If H$_{\text{belief}}$ is correct, the fix
+H$_{\text{format-dep}}$ is correct, existing frontier models can already
+express the pluralism that aligned advice requires, and the fix costs
+one line of a prompt. If H$_{\text{format-inv}}$ is correct, the fix
 requires new preference data, retraining, or architectural changes
 \citep{ouyang-2022-instructgpt} — an enterprise orders of magnitude
 more expensive.
@@ -159,11 +163,15 @@ more expensive.
 \citep{zhang-2025-verbalized-sampling}. We ask the model to output a
 probability distribution over the two options — ``P(Option A) = 0.XX,
 P(Option B) = 0.XX'' — rather than committing to a single choice. If
-H$_{\text{decoding}}$ is true, this format change should allow the model
-to express its full internal distribution, recovering most or all of the
-entropy gap. If H$_{\text{belief}}$ is true, the internal distribution
-is peaked regardless of how the question is asked; verbalized output
-should therefore show entropy close to the forced-choice baseline.
+H$_{\text{format-dep}}$ is true, this format change should allow the
+model to express a broad distribution, recovering most or all of the
+entropy gap. If H$_{\text{format-inv}}$ is true, the expressed
+distribution is peaked regardless of how the question is asked;
+verbalized output should therefore show entropy close to the
+forced-choice baseline. Recovering entropy under elicitation does not
+establish that a broad distribution pre-existed the query in the model's
+internal state; it shows the model can express such a distribution when
+the format permits.
 
 %% -----------------------------------------------------------------------
 \section{The Verbalized Sampling test}
