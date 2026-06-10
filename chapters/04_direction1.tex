@@ -7,10 +7,12 @@
 
 We tested four post-trained large language models on 132 ambiguous
 Reddit decision posts under four prompt conditions. Verbalized Sampling
-recovered 94--101\% of the entropy gap across all four models. The
-remainder of this chapter establishes that this recovery is
-mechanism-specific, cross-model robust, and not explained by sampling
-temperature.
+recovered nearly all of the entropy gap between the forced-choice
+baseline and the human community in every model. The remainder of this
+chapter establishes that this recovery is mechanism-specific,
+cross-model robust, and not explained by sampling temperature;
+\cref{sec:d1_vs} reports the precise recovery figures and defines how
+recovery is measured.
 
 \Cref{sec:d1_baseline} documents the baseline entropy gap and its
 magnitude. \Cref{sec:d1_hypotheses} frames two competing behavioral
@@ -200,12 +202,17 @@ the framing descriptive rather than personal, otherwise identical.
 The mean LLM entropy under VS was 0.608 nats, compared to 0.046 nats at
 baseline and 0.621 nats for the human reference (see
 \cref{tab:d1_conditions}). The mean absolute gap fell from 0.446 to
-0.210. Recovery, defined as $(H_{\text{VS}} - H_{\text{baseline}}) /
-(H_{\text{human}} - H_{\text{baseline}})$, was 94--101\% across the four
-models (\cref{sec:d1_crossmodel}). The result was statistically robust:
-paired bootstrap ($n{=}525$ post--model pairs, 10\,000 resamplings) gave
-$\Delta = -0.235$, 95\% CI $[-0.250, -0.220]$, $p_{\text{fdr}} <
-0.001$.
+0.210. Recovery measures the fraction of the baseline-to-human entropy
+gap that a condition closes: of the distance between the forced-choice
+baseline entropy and the human community's entropy, the proportion the
+verbalized condition recovered. Formally, $(H_{\text{VS}} -
+H_{\text{baseline}}) / (H_{\text{human}} - H_{\text{baseline}})$, it was
+94--101\% across the four models (\cref{sec:d1_crossmodel}); a value
+above 100\% means the model's verbalized distribution was slightly more
+spread out than the human reference. The result was statistically
+robust: paired bootstrap ($n{=}525$ post--model pairs, 10\,000
+resamplings) gave $\Delta = -0.235$, 95\% CI $[-0.250, -0.220]$,
+$p_{\text{fdr}} < 0.001$.
 
 \begin{figure}[t]
   \centering
