@@ -15,9 +15,11 @@ Two interface-level factors drive it; content-level factors do not.
 ## Thesis statement (LOCKED)
 
 > LLM advice on personal decisions exhibits a pluralistic gap that is
-> structural and decoding-driven, not stimulus-driven or belief-driven.
-> The gap is a deployment-level problem, not a training-level problem,
-> and is recoverable through interface design.
+> structural and format-dependent, not stimulus-driven. The gap is a
+> deployment-level problem, not a training-level problem, and is
+> recoverable through interface design. We make no claim about the
+> model's internal state: our evidence concerns expressed behavior under
+> different elicitation formats.
 
 ## Writing style
 

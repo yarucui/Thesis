@@ -144,12 +144,12 @@ correspondingly different intervention costs.
 asked to output, single token versus distribution, forced choice
 versus free response, structured versus unstructured format.
 Interface-level effects determine \emph{what the model is allowed to
-express}, independent of what the model has been trained to believe.
+express}, independent of what the model has been trained to output.
 
 \textbf{Training-level effects} are produced by what the LLM has
 internalised through training, pre-training distribution,
 instruction-tuning objectives, RLHF reward shaping. Training-level
-effects determine \emph{what the model believes is appropriate to
+effects determine \emph{what the model treats as appropriate to
 output}, given a particular interface.
 
 The two are not independent in practice. Training shapes how the
@@ -164,8 +164,9 @@ tuning, persona injection, RLHF revision).
 
 The 94--101\% entropy recovery under Verbalized Sampling
 (\cref{sec:d1_vs}) is the central evidence for an interface-level
-account: it shows that the LLM's internal belief distribution is not
-collapsed. Under a different interface, the same model, with the
+account: it shows that the LLM's expressed distribution is not
+collapsed when the format permits one. Under a different interface, the
+same model, with the
 same weights, post-training pipeline, and decoding temperature,
 expresses near-human pluralism. The collapse documented at baseline is
 what the interface squeezes out, not what training has destroyed.
@@ -185,8 +186,8 @@ appropriate at the underlying decision.
 Read together, the two results support a single mechanistic claim
 under the interface-level versus training-level distinction: advice
 collapse on personal decisions is predominantly an interface
-phenomenon. The model encodes pluralism in its internal
-representation; forced-choice queries do not ask for it.
+phenomenon. The model expresses pluralism under distributional
+elicitation; forced-choice queries do not ask for it.
 
 The mixed-effects regression of \cref{sec:d1_baseline} provides a
 second line of support for the interface-level versus training-level
@@ -383,11 +384,11 @@ example of this combination.
 distributional metrics.} Benchmarks that score LLMs only on
 single-token forced-choice outputs systematically underestimate model
 calibration. A model that appears to have ``high confidence and high
-accuracy'' on a forced-choice benchmark may have well-calibrated
-internal beliefs that the benchmark format hides. Adding a
+accuracy'' on a forced-choice benchmark may express well-calibrated
+distributions under a format the benchmark does not use. Adding a
 distributional-output condition to existing benchmarks, even as a
-secondary metric, would surface the gap between what the model knows
-and what the benchmark allows it to express.
+secondary metric, would surface the gap between what the model can
+express and what the benchmark allows it to express.
 
 \paragraph{Recommendation 5: Test on real, post-cutoff content.} The
 Pushshift-based corpus used here eliminates training-data contamination
@@ -403,17 +404,17 @@ memorised from training data.
 
 The interface-level versus training-level distinction raises a
 question for training-level research that this thesis cannot answer.
-If the internal belief distribution is preserved through current
-post-training pipelines (as the VS recovery shows), why does forced-
-token sampling so reliably collapse it? Two candidate answers are
+If the capacity to express a broad distribution is preserved through
+current post-training pipelines (as the VS recovery shows), why does
+forced-token sampling so reliably collapse the expressed output? Two candidate answers are
 worth investigating. The first is a decoding-time typicality bias
 \citep{zhang-2025-verbalized-sampling}: the argmax-favouring head used
 at deployment compresses the distribution, not the training itself.
 The second is an implicit role prior: RLHF, as developed in
 instruction-tuning pipelines \citep{ouyang-2022-instructgpt}, may
 teach the model that, when asked to give a single answer, it should
-commit to a single answer; the pluralism is preserved internally but
-interface-gated. The
+commit to a single answer; the capacity to express pluralism is
+retained but interface-gated. The
 two mechanisms predict subtly different behaviour under
 intermediate-format interventions; distinguishing them is a target for
 training-level research.
@@ -607,9 +608,9 @@ without modification.
 \paragraph{Multi-turn deliberation.} Real advice often unfolds across
 multiple conversational turns: the user clarifies the situation, the
 model asks questions, both refine the framing. A multi-turn version of
-the experiment could test whether LLM pluralism is preserved across
-deliberation, or whether each forced-choice turn re-applies the
-collapse and the model's effective belief narrows turn by turn.
+the experiment could test whether expressed LLM pluralism is preserved
+across deliberation, or whether each forced-choice turn re-applies the
+collapse and the model's expressed distribution narrows turn by turn.
 
 \paragraph{Population-representative baseline.}
 \label{sec:disc_fw_population}
@@ -628,9 +629,9 @@ aggregation, but the experiment is well-defined.
 Across two experiments on four post-trained LLMs and 620 personal-
 decision posts, the evidence converges on one mechanistic finding:
 LLM advice collapse is predominantly an interface-level phenomenon.
-The model's internal belief distribution is preserved through current
-post-training, but forced-choice interfaces compress it into near-
-deterministic outputs. A prompt-only intervention recovers 94--101\%
+The model's capacity to express a broad distribution is preserved
+through current post-training, but forced-choice interfaces compress
+the expressed output into near-deterministic answers. A prompt-only intervention recovers 94--101\%
 of the entropy gap; a role-framing intervention recovers approximately
 4\% of the absolute alignment gap. The order-of-magnitude difference
 is the empirical signature of the interface-level versus training-

@@ -23,17 +23,17 @@ contributes to the field.
 
 \paragraph{Mechanistic contribution.}
 Through a verbalized-sampling diagnostic on the ambiguous subset, we
-demonstrated that the alignment gap is decoding-driven rather than
-belief-driven. A prompt-level change --- asking the LLM to output a
+demonstrated that the alignment gap is format-dependent rather than
+format-invariant. A prompt-level change --- asking the LLM to output a
 probability distribution over options, rather than commit to a single
 forced choice --- recovered 94 to 101 percent of the entropy gap
 across all four study models. The recovery is robust to a temperature
 control: raising sampling temperature from 0.7 to 1.2 in the same
 forced-choice format closed only a small fraction of the gap that
-distributional output closed at the lower temperature. The LLM's
-internal belief distribution over personal-decision options, in other
-words, is preserved through current post-training paradigms; what
-collapses at deployment is the interface, not the belief.
+distributional output closed at the lower temperature. The models'
+capacity to express a broad distribution over personal-decision options,
+in other words, is preserved through current post-training paradigms;
+what collapses at deployment is the interface, not that capacity.
 
 \paragraph{Theoretical contribution.}
 We developed the \textbf{interface-level vs training-level
@@ -98,5 +98,5 @@ model would otherwise express; the fix, for this class of alignment
 failure, is not a better model but a better query.
 
 When deployed as advisors, LLMs do not need to retrain in order to
-express the pluralism they already know --- they need to be asked for
-it.
+express the pluralism their outputs can represent --- they need to be
+asked for it.

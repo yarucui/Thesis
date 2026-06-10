@@ -62,9 +62,11 @@ on personal-decision data.
 \label{sec:contributions}
 
 We demonstrate that LLM choice collapse on personal decisions is
-decoding-driven rather than belief-driven, and that role framing ---
-though statistically detectable --- is 16 times weaker than output
-format as a lever for pluralism. The contributions are four.
+format-dependent rather than format-invariant --- it is governed by the
+output format the model is queried under, not by the content of the
+decision --- and that role framing, though statistically detectable, is
+16 times weaker than output format as a lever for pluralism. The
+contributions are four.
 
 First, we release the first personal-decision alignment dataset built
 for this purpose: 811 real Reddit posts spanning education, career,
@@ -78,9 +80,9 @@ Second, we provide direct mechanism evidence. Switching the output
 format from forced choice to verbalized sampling, while holding the
 prompt and temperature otherwise constant, recovers 94--101\% of the
 entropy gap across the 4 models tested. A model that recovers
-near-human entropy under a different decoding interface cannot have a
-collapsed internal belief about the question
-\citep{zhang-2025-verbalized-sampling}.
+near-human entropy under a different output format demonstrates that it
+can express a broad distribution when the format permits, whatever its
+internal state may be \citep{zhang-2025-verbalized-sampling}.
 
 Third, we rank the two interface mechanisms against each other.
 Output format reduces the absolute alignment gap by 0.235 (Cohen's $d
@@ -95,17 +97,19 @@ any model retraining, fine-tuning, or preference data
 \citep{russo-2026-pluralistic}. Whether this generalizes beyond the
 personal-decision domain is left to future work; within the domain,
 the practical implication is that the existing fleet of frontier
-models already encodes the diversity that aligned advice requires, and
-the deployment surface is what discards it.
+models can already express the diversity that aligned advice requires,
+and the deployment surface is what discards it.
 
 \section{Thesis statement and research questions}
 \label{sec:rqs}
 
 \begin{quote}
 LLM advice on personal decisions exhibits a pluralistic gap that is
-structural and decoding-driven, not stimulus-driven or belief-driven.
-The gap is a deployment-level problem, not a training-level problem,
-and is recoverable through interface design.
+structural and format-dependent, not stimulus-driven. The gap is a
+deployment-level problem, not a training-level problem, and is
+recoverable through interface design. We make no claim about the
+model's internal state: our evidence concerns expressed behavior under
+different elicitation formats.
 \end{quote}
 
 \noindent We address this through three research questions.
@@ -115,9 +119,10 @@ and is recoverable through interface design.
         personal decisions diverge from the human community choice
         distributions on the same posts, in mean and in distributional
         shape?
-  \item \textbf{RQ2.} Is the divergence decoding-driven (recoverable
-        by altering output format) or belief-driven (requiring
-        retraining)?
+  \item \textbf{RQ2.} Is the divergence format-dependent (the expressed
+        distribution changes when output format changes) or
+        format-invariant (the expressed distribution stays peaked
+        regardless of format, implying retraining is required)?
   \item \textbf{RQ3.} Is the divergence role-induced (recoverable by
         shifting from prescriptive advisor framing to descriptive
         oracle framing)?

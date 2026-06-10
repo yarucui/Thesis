@@ -1,4 +1,4 @@
-\chapter{Direction 1: disentangling decoding from belief in LLM advice}
+\chapter{Direction 1: disentangling format-dependent from format-invariant expression in LLM advice}
 \label{chap:direction1}
 
 %% -----------------------------------------------------------------------
@@ -13,9 +13,9 @@ mechanism-specific, cross-model robust, and not explained by sampling
 temperature.
 
 \Cref{sec:d1_baseline} documents the baseline entropy gap and its
-magnitude. \Cref{sec:d1_hypotheses} frames two competing mechanistic
-hypotheses — decoding collapse versus belief collapse — and derives the
-diagnostic implication of each. \Cref{sec:d1_vs} presents the Verbalized
+magnitude. \Cref{sec:d1_hypotheses} frames two competing behavioral
+hypotheses — format-dependent versus format-invariant expression — and
+derives the diagnostic implication of each. \Cref{sec:d1_vs} presents the Verbalized
 Sampling test and its outcome, including the secondary Distribution
 Verbalization variant. \Cref{sec:d1_temperature} shows that raising
 sampling temperature from 0.7 to 1.2 produces only a fraction of the
@@ -170,7 +170,7 @@ should therefore show entropy close to the forced-choice baseline.
 \label{sec:d1_vs}
 
 Verbalized Sampling produced near-complete entropy recovery, decisively
-favoring the decoding-collapse hypothesis.
+favoring the format-dependent-expression hypothesis.
 
 \subsection*{Manipulation}
 
@@ -218,8 +218,8 @@ This result extends the finding of \citet{zhang-2025-verbalized-sampling}
 and donation amounts — to binary forced-choice advice on personal
 decisions. The recovery is not only statistically significant but
 practically complete: a model that recovers near-human entropy under VS
-while producing near-zero entropy under forced choice cannot have a
-collapsed internal belief.
+while producing near-zero entropy under forced choice can express a
+broad distribution when the format permits, whatever its internal state.
 
 \subsection*{Distribution Verbalization (secondary condition)}
 
@@ -311,8 +311,9 @@ completely.
 \section{Cross-model robustness}
 \label{sec:d1_crossmodel}
 
-The decoding-collapse pattern holds across four post-trained models that
-differ in training procedure, scale, and developer, indicating a property
+The format-dependent-expression pattern holds across four post-trained
+models that differ in training procedure, scale, and developer,
+indicating a property
 of the post-training paradigm rather than of any individual model.
 
 \Cref{tab:d1_model_breakdown} reports the full per-model results. All
@@ -364,17 +365,17 @@ finding is not a single-model artifact. GPT (99.3\%), Claude (94.2\%),
 Mistral (100.5\%), and Llama (97.5\%) all converged toward the human
 reference when permitted to express a probability distribution. The
 consistency across models trained by different organisations with
-different RLHF pipelines \citep{ouyang-2022-instructgpt, bai-2022-constitutional} is the scientifically decisive fact: decoding
-collapse appears to be a property of the post-training paradigm, not of
+different RLHF pipelines \citep{ouyang-2022-instructgpt, bai-2022-constitutional} is the scientifically decisive fact: format-dependent
+expression appears to be a property of the post-training paradigm, not of
 any particular implementation.
 
 \textit{Mistral exceeded 100\% recovery.} A recovery above 100\% implies
 that Mistral's VS distribution was slightly broader than the human
 reference distribution. Two interpretations are compatible with the data.
 First, Mistral's post-training may apply less aggressive RLHF compression
-than the other three models, leaving internal beliefs more diffuse; when
-the format permits expression of that diffuseness, they overshoot the
-human reference slightly. Second, the 0.5 percentage-point overshoot is
+than the other three models, so that its expressed distribution is more
+diffuse; when the format permits, that diffuseness overshoots the human
+reference slightly. Second, the 0.5 percentage-point overshoot is
 within the bootstrap 95\% confidence interval of the human reference
 itself, and may reflect sampling noise in the $N{=}3$ VS draws per cell.
 We do not resolve this question here; it merits investigation with larger
@@ -385,8 +386,9 @@ training \citep{bai-2022-constitutional} may produce more prescriptive
 priors — the model is trained to give a single helpful answer, which
 could resist distributional output even when explicitly asked. Claude's
 recovery is, however, still substantially above 90\%, so the
-interpretation remains that decoding is the dominant driver. The precise
-contribution of Constitutional AI is speculative and left for future work.
+interpretation remains that output format is the dominant driver. The
+precise contribution of Constitutional AI is speculative and left for
+future work.
 
 The 7.3 percentage-point spread across models (94.2\% to 100.5\%) is
 smaller than the 95\% confidence interval around any individual model's
@@ -422,8 +424,8 @@ Chapter 5 tests role-framing effects across the full 811-post corpus,
 covering a broader range of consensus levels and providing a more
 general view of the alignment gap.
 
-The decoding-collapse hypothesis is now supported on four independent
-grounds. First, mean entropy rose from 0.046 to 0.608 nats under VS —
+The format-dependent-expression hypothesis is now supported on four
+independent grounds. First, mean entropy rose from 0.046 to 0.608 nats under VS —
 a 13-fold increase with the same underlying model. Second, the recovery
 rate was 94--101\% across four models from different organisations and
 training pipelines. Third, raising sampling temperature from 0.7 to 1.2
@@ -432,10 +434,11 @@ compared to VS's 97.9\% at the lower temperature; the decisive variable
 is the format constraint, not the decoding temperature. Fourth, the
 VS-versus-baseline difference was statistically robust across multiple
 comparison correction ($p_{\text{fdr}} < 0.001$ after Benjamini-Hochberg
-adjustment over 11 comparisons). The belief-collapse hypothesis is
-provisionally rejected for these four models: a model whose internal
-distribution is genuinely collapsed cannot recover near-human entropy
-when a different output format is used.
+adjustment over 11 comparisons). The format-invariant-expression
+hypothesis is provisionally rejected for these four models: a model
+whose expressed distribution were genuinely peaked regardless of format
+could not recover near-human entropy when a different output format is
+used.
 
 Having identified output format as the primary lever, we now ask whether
 role framing — a manipulation that holds output format fixed but varies
