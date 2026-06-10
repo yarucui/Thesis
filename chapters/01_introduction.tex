@@ -31,12 +31,13 @@ takes up.
 \label{sec:puzzle}
 
 Across four state-of-the-art language models and 132 ambiguous Reddit
-decision posts, the average LLM entropy on a forced binary choice was
-0.046 nats, compared to a Reddit community entropy of 0.621 nats --- a
-13$\times$ gap. When the upvote-weighted distribution of comments was
-near 50/50, the models still answered close to 100/0. The gap is not a
-small drift in calibration; it is a structural difference in
-distributional shape.
+decision posts, the models gave near-deterministic answers even where
+the community was split roughly evenly. When the upvote-weighted
+distribution of comments was near 50/50, the models still answered
+close to 100/0. The gap is not a small drift in calibration; the two
+distributions have fundamentally different shapes --- one broad, one
+nearly degenerate. We quantify this gap and report the per-model
+entropy values in \cref{chap:direction1}.
 
 The puzzle is mechanism. Two explanations are observationally similar
 in the standard setup but have opposite deployment consequences. The
