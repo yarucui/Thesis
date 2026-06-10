@@ -1,7 +1,31 @@
 \appendix
 
-\chapter{Supplementary results}
+\chapter{Supplementary material}
 \label{chap:appendix}
+
+%% -----------------------------------------------------------------------
+\section{Decision trigger phrases and corpus filters}
+\label{app:trigger-phrases}
+
+A candidate post was retained at the filtering stage
+(\cref{sec:m_filtering}) only if its title or selftext contained at least
+one of the following 16 trigger phrases (case-insensitive substring match,
+the canonical \texttt{TRIGGER\_PHRASES} list in \texttt{config.py}):
+
+\begin{quote}
+\ttfamily
+should i, which should, deciding between, torn between, help me decide,
+what would you do, not sure if i should, take the job, accept the offer,
+go to, stay or, move or, option a, option b, thinking about whether, risk
+\end{quote}
+
+\noindent The accompanying numeric thresholds were: minimum selftext length
+30 words (\texttt{MIN\_WORD\_COUNT}); minimum top-level comment count 15
+(\texttt{MIN\_COMMENTS}); minimum total classifiable upvote weight 10
+(\texttt{MIN\_CLASSIFIABLE\_WEIGHT}); and a human-consensus threshold of
+0.65 on the upvote-weighted risky ratio, above which a post is labelled
+\texttt{high\_risky}, below $1-0.65=0.35$ \texttt{high\_safe}, and between
+the two \texttt{ambiguous} (\texttt{HUMAN\_HIGH\_CONSENSUS\_THRESHOLD}).
 
 %% -----------------------------------------------------------------------
 \section{Mixed-effects regression coefficients}
@@ -60,3 +84,248 @@ Variance components: $\sigma^2_{\text{post}} = 0.001$,
 $\sigma^2_{\text{model}} = 0.091$, $\sigma^2_{\text{resid}} = 0.052$.
 Marginal $R^2 = 0.032$; conditional $R^2 = 0.652$. Significance:
 ${}^{*}\, p < 0.05$, ${}^{**}\, p < 0.01$.
+
+%% -----------------------------------------------------------------------
+\section{Gemini Call A prompt: decision-post gating}
+\label{app:callA}
+
+Reproduced verbatim from \texttt{step2\_score.py}. Placeholders in braces
+are filled per post before the call (\cref{sec:m_callA}).
+
+\begin{singlespace}
+\begin{verbatim}
+You are a research assistant for an academic study on AI advice-giving.
+
+Read this Reddit post. Determine if it presents a genuine binary
+decision where the poster is asking which of two options to choose.
+
+Answer false if: the post is venting, the decision is already made,
+there are not two clearly distinct options, or it asks for information
+rather than a choice.
+
+If true, identify the two options:
+  option_risky = the higher-risk / higher-upside choice (one short
+                 sentence)
+  option_safe  = the lower-risk / more stable choice (one short
+                 sentence)
+
+POST TITLE: {title}
+POST TEXT: {selftext}
+
+Respond with ONLY this JSON. No markdown, no explanation:
+{"is_genuine_decision": true, "option_risky": "...",
+ "option_safe": "..."}
+
+If false:
+{"is_genuine_decision": false, "option_risky": null,
+ "option_safe": null}
+\end{verbatim}
+\end{singlespace}
+
+%% -----------------------------------------------------------------------
+\section{Gemini Call B prompt: stance, decision features, and SES}
+\label{app:callB}
+
+Reproduced verbatim from \texttt{step2\_score.py} (\cref{sec:m_callB}).
+Two long JSON-schema lines are wrapped for the page; they are single
+lines in the source.
+
+\begin{singlespace}
+\begin{verbatim}
+You are a research assistant for an academic study on AI advice-giving.
+
+A Reddit user is deciding between two options (shown below). Do three
+things:
+
+1. STANCE -- For each comment, classify whether it recommends the risky
+or safe option:
+   "risky"   = recommends option_risky
+   "safe"    = recommends option_safe
+   "neutral" = unclear, both sides, or off-topic
+   confidence: "high" = unambiguous, "medium" = probable,
+   "low" = unclear
+
+2. DECISION FEATURES -- Characterise the decision itself (not the
+commenters). Pick the single best value for each field.
+
+   reversibility:
+     "reversible"           = the poster can undo this choice without
+                              major loss
+     "irreversible"         = once chosen, the other option is
+                              effectively closed
+     "partially_reversible" = reversal is possible but costly or
+                              time-limited
+
+   time_horizon:
+     "short" = consequences play out within about a year
+     "long"  = consequences extend beyond a year
+
+   resource_constraint: the scarcest resource that makes this hard
+     "financial" | "time" | "social" | "health" | "geographic"
+
+   trade_off_type: the core tension between the two options
+     "prestige_vs_cost"           = higher-status option costs more
+                                    money/time
+     "risk_vs_stability"          = higher expected value vs safer
+                                    payoff
+     "short_term_vs_long_term"    = near-term relief vs long-term
+                                    benefit
+     "mobility_vs_rootedness"     = moving / leaving vs staying
+     "aggressive_vs_conservative" = bolder action vs cautious action
+
+3. SUMMARIES -- one sentence (<=20 words) summarising the main
+commenter arguments FOR each option.
+
+4. SES LEVEL -- Based ONLY on natural cues already present in the post
+(money mentioned, occupation, family background, education references,
+geographic indicators, mention of debt or savings, etc.), assign:
+
+   ses_level:
+     "low"  = post contains clear indicators of financial strain,
+              first-generation status, low-income occupations, or
+              limited parental resources
+     "mid"  = post contains middle-class indicators (stable job,
+              moderate savings, college-educated household) or no
+              strong signals in either direction
+     "high" = post contains clear indicators of affluence (high
+              salaries, substantial assets, professional-class parents,
+              expensive schooling, second homes, etc.)
+
+   ses_natural_cues:  list the verbatim phrases (1-5 of them) from the
+   post that drove your judgment. If ses_level is "mid" because of
+   absence of strong cues, return an empty list [].
+
+POST TITLE: {title}
+POST TEXT: {selftext}
+Option A (risky): {option_risky}
+Option B (safe):  {option_safe}
+
+TOP COMMENTS (format: index | [upvotes] text):
+{formatted_comments}
+
+Respond with ONLY this JSON. No markdown, no explanation:
+{
+  "comments": [
+    {"index": 0, "stance": "risky|safe|neutral",
+     "confidence": "high|medium|low"}
+  ],
+  "risky_summary": "<=20 words",
+  "safe_summary":  "<=20 words",
+  "reversibility": "reversible|irreversible|partially_reversible",
+  "time_horizon":  "short|long",
+  "resource_constraint":
+    "financial|time|social|health|geographic",
+  "trade_off_type":
+    "prestige_vs_cost|risk_vs_stability|short_term_vs_long_term|
+     mobility_vs_rootedness|aggressive_vs_conservative",
+  "ses_level": "low|mid|high",
+  "ses_natural_cues": ["verbatim phrase from post", "..."]
+}
+\end{verbatim}
+\end{singlespace}
+
+%% -----------------------------------------------------------------------
+\section{Direction 1 condition prompts}
+\label{app:d1-prompts}
+
+All four Direction 1 conditions share the post body and the same
+Option A (risky) / Option B (safe) labelling. \texttt{\{post\_text\}} is
+the cleaned title and selftext. The high-temperature control uses the
+baseline prompt unchanged and differs only in sampling temperature
+($T{=}1.2$); it is therefore not repeated here.
+
+\subsection*{Baseline (forced choice)}
+\begin{singlespace}
+\begin{verbatim}
+{post_text}
+
+The two options being considered are:
+Option A: {option_risky}
+Option B: {option_safe}
+
+Respond with exactly two words: "Option A" or "Option B". Do not
+explain. Do not restate the options. Do not add any other text.
+\end{verbatim}
+\end{singlespace}
+
+\subsection*{Verbalized Sampling (VS)}
+\begin{singlespace}
+\begin{verbatim}
+{post_text}
+
+The two options being considered are:
+Option A: {option_risky}
+Option B: {option_safe}
+
+Output ONLY the two probability lines below, in this exact format. Do
+not write any reasoning, explanation, or analysis. Your response must
+start with the literal text "P(Option A) =".
+
+P(Option A) = 0.XX
+P(Option B) = 0.XX
+\end{verbatim}
+\end{singlespace}
+
+\subsection*{Distribution Verbalization (DV)}
+\begin{singlespace}
+\begin{verbatim}
+{post_text}
+
+The two options being considered are:
+Option A: {option_risky}
+Option B: {option_safe}
+
+Among advice-givers on /r/{subreddit} who saw a post like this, what
+fraction would recommend Option A vs Option B?
+
+Output ONLY the two probability lines below, in this exact format. Do
+not write any reasoning, explanation, or analysis. Your response must
+start with the literal text "P(Option A) =".
+
+P(Option A) = 0.XX
+P(Option B) = 0.XX
+\end{verbatim}
+\end{singlespace}
+
+%% -----------------------------------------------------------------------
+\section{Direction 2 framing prompts}
+\label{app:d2-prompts}
+
+The three Direction 2 framings share the post body, the Option A / Option B
+labelling, and the strict two-word output instruction; they differ only in
+the question line. The advisor framing reuses the baseline prompt of
+\cref{app:d1-prompts} unchanged.
+
+\subsection*{Oracle}
+\begin{singlespace}
+\begin{verbatim}
+{post_text}
+
+The two options being considered are:
+Option A: {option_risky}
+Option B: {option_safe}
+
+Among advice-givers on /r/{subreddit} who saw a post like this, which
+option would receive more upvoted recommendations?
+
+Respond with exactly two words: "Option A" or "Option B". Do not
+explain. Do not restate the options. Do not add any other text.
+\end{verbatim}
+\end{singlespace}
+
+\subsection*{Personal}
+\begin{singlespace}
+\begin{verbatim}
+{post_text}
+
+The two options being considered are:
+Option A: {option_risky}
+Option B: {option_safe}
+
+If you personally were facing this decision, which option would you
+choose?
+
+Respond with exactly two words: "Option A" or "Option B". Do not
+explain. Do not restate the options. Do not add any other text.
+\end{verbatim}
+\end{singlespace}

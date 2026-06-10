@@ -104,7 +104,7 @@ upvote-weighted distribution could be computed. Posts also had to
 contain at least one decision trigger phrase from a fixed regex list of
 16 patterns including ``should i'', ``deciding between'',
 ``torn between'', ``help me decide'', and ``thinking about whether''
-(full list in Appendix~A.1; the canonical reference is the
+(full list in \cref{app:trigger-phrases}; the canonical reference is the
 \texttt{TRIGGER\_PHRASES} list in \texttt{config.py}).
 
 The pipeline yield by stage was:
@@ -225,7 +225,7 @@ in outcome, higher upside but also higher potential cost, as
 \texttt{option\_safe}. Output was constrained to a JSON schema; posts
 returning malformed JSON or \texttt{is\_genuine\_decision = false} were
 dropped from the corpus. The full Call A prompt appears in
-Appendix~A.3.
+\cref{app:callA}.
 
 \subsection{Gemini Call B, stance, features, SES}
 \label{sec:m_callB}
@@ -242,7 +242,7 @@ irreversible), \texttt{time\_horizon} (short / long),
 conservative, dependent vs independent), and one
 \texttt{ses\_level} (low / mid / high) inferred from natural cues in
 the post body (income mentions, financial-stress language, education
-level). The full Call B prompt appears in Appendix~A.4.
+level). The full Call B prompt appears in \cref{app:callB}.
 
 The four decision features and the SES indicator serve as candidate
 moderators of the alignment gap. The methodological role of each
@@ -375,7 +375,7 @@ conditions were run:
       collapse.
 \end{enumerate}
 
-All four condition prompts are reproduced verbatim in Appendix~A.5.
+All four condition prompts are reproduced verbatim in \cref{app:d1-prompts}.
 Total new calls (excluding reused baseline):
 $132 \times 4 \times (3 + 3 + 20) = 13{,}728$.
 
@@ -403,7 +403,7 @@ and identical Option A / Option B mapping:
 Sampling parameters matched the baseline: $N{=}10$, $T = 0.7$,
 \texttt{max\_tokens} = 30. Total new calls (excluding reused advisor):
 $620 \times 4 \times 10 \times 2 = 49{,}600$. All framing prompts
-appear in Appendix~A.6.
+appear in \cref{app:d2-prompts}.
 
 \Cref{tab:m_experiments} summarises the three experiments.
 
