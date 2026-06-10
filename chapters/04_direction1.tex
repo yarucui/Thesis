@@ -9,19 +9,19 @@ We tested four post-trained large language models on 132 ambiguous
 Reddit decision posts under four prompt conditions. Verbalized Sampling
 recovered 94--101\% of the entropy gap across all four models. The
 remainder of this chapter establishes that this recovery is
-mechanism-specific, holds across all four models, and is not explained
-by sampling temperature.
+mechanism-specific, cross-model robust, and not explained by sampling
+temperature.
 
 \Cref{sec:d1_baseline} documents the baseline entropy gap and its
 magnitude. \Cref{sec:d1_hypotheses} frames two competing mechanistic
-hypotheses, decoding collapse versus belief collapse, and derives the
+hypotheses — decoding collapse versus belief collapse — and derives the
 diagnostic implication of each. \Cref{sec:d1_vs} presents the Verbalized
 Sampling test and its outcome, including the secondary Distribution
 Verbalization variant. \Cref{sec:d1_temperature} shows that raising
 sampling temperature from 0.7 to 1.2 produces only a fraction of the
 entropy recovery achieved by changing output format, ruling out
 temperature as the primary driver. \Cref{sec:d1_crossmodel} documents
-the cross-model pattern and discusses the between-model spread
+robustness across the four models and discusses the between-model spread
 honestly. \Cref{sec:d1_synthesis} synthesises the evidence and opens the
 role-framing question that Chapter 5 addresses.
 
@@ -36,10 +36,10 @@ same posts.
 \subsection*{Method recap}
 \label{subsec:d1_method}
 
-We constructed a corpus of 620 Reddit decision posts spanning education,
+We constructed a corpus of 811 Reddit decision posts spanning education,
 career, finance, health, and social subreddits (full pipeline described
 in \cref{chap:methodology}). For Direction 1 we retained the 132 posts
-whose upvote-weighted human risky ratio fell in [0.20, 0.80], the
+whose upvote-weighted human risky ratio fell in [0.20, 0.80] — the
 ambiguous subset, where the online community itself was genuinely
 divided. We queried four study models (GPT-5, Claude Sonnet 4.6, Mistral
 Large 2411, and Llama 4 Maverick) on each post 10 times at temperature
@@ -58,7 +58,7 @@ Three results characterise the baseline condition.
 
 \textit{Mean entropy gap.} The mean LLM entropy under forced-choice
 decoding was 0.046 nats, compared to a human reference entropy of 0.621
-nats, a 13-fold gap. Binary entropy is bounded above by $\ln 2 \approx
+nats — a 13-fold gap. Binary entropy is bounded above by $\ln 2 \approx
 0.693$ nats, which corresponds to a perfectly balanced 50/50 split. The
 human distribution was thus at 90\% of the theoretical maximum, while
 LLM entropy was essentially zero. A community that was genuinely
@@ -74,57 +74,13 @@ LLM) on the ambiguous subset was 3.58, which falls in the range
 conventionally labelled extremely large. The gap cannot be explained by
 sampling noise.
 
-Beyond the ambiguous subset reported above, the full 620-post advisor
-baseline (2{,}472 qualified post--model cells) allows a mixed-effects
-regression of absolute alignment gap on the four annotated decision
-features plus a sampling-frame control for domain
-(\cref{sec:m_mixedlm}, \cref{eq:m_mixedlm}). The full coefficient
-table is reported in \cref{app:regression-table}; two structural
-findings of the regression bear on the interpretation of the
-alignment gap as a whole.
-
-\textit{Variance decomposition.} The fitted variance components are
-unequal by two orders of magnitude. The post-level intercept variance
-is $\sigma^2_{\text{post}} = 0.001$ (essentially zero); the
-model-level intercept variance is $\sigma^2_{\text{model}} = 0.091$;
-the residual variance is $\sigma^2_{\text{resid}} = 0.052$. Variance
-attributable to post identity is roughly 1\% of total variance;
-variance attributable to model identity is roughly 63\%. Conditional
-$R^2$ (fixed plus random effects) is 0.65; marginal $R^2$ (fixed
-effects alone) is 0.03. Within a single LLM, the gap on a given post
-is therefore close to the gap that LLM produces on any other post;
-the dominant axis of variation runs between models, not between
-posts. We return to this observation in
-\cref{sec:disc_interface_training}.
-
-\textit{Content moderation.} Three of the four candidate content
-features show no significant moderation: \texttt{reversibility}
-($p = 0.51$ for partially reversible vs reversible reference;
-$p = 0.85$ for irreversible), \texttt{resource\_constraint} (smallest
-$p = 0.12$ for the \texttt{social} contrast), and \texttt{ses\_level}
-($p > 0.66$ for both contrasts). \texttt{time\_horizon} is a small
-but significant moderator: posts with a short time horizon show an
-alignment gap larger by $\Delta = 0.078$ (95\% CI
-$[0.013, 0.144]$, $p = 0.019$) than long-horizon posts after
-controlling for other features and both random intercepts. The
-\texttt{domain} sampling-frame control is itself non-trivial ---
-finance and education posts show smaller gaps than the career
-reference category ($\Delta = -0.102$, $p = 0.002$ and
-$\Delta = -0.086$, $p = 0.051$ respectively) --- but this reflects
-which subreddits decision-domain communities are posting from, not a
-content-level property of the posts themselves. The structural
-account of the alignment gap therefore holds in dominance but admits
-weak content modulation at the margin: time horizon, of the four
-content features tested, is the one through which content reaches
-alignment behaviour, and the magnitude of its effect is about a
-third of the output-format effect ($\Delta = -0.235$, reported in
-\cref{sec:d1_vs} of this chapter) and more than five times larger
-than the role-framing effect ($\Delta = -0.015$,
-\cref{chap:direction2}).
-
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/fig41_distribution_shape/out.pdf}
+  %% \includegraphics[width=\linewidth]{figures/fig4_1_histogram_pair.pdf}
+  \todo{fig 4.1: histogram pair, 132-post human risky\_ratio distribution
+    (broad, centred near 0.5) vs LLM baseline risky\_rate distribution
+    (bimodal at 0 and 1). Caption: ``Human choices are broadly
+    distributed; LLM forced-choice outputs collapse to near-certainty.''}
   \caption{Distribution of human risky ratios and LLM baseline risky
     rates across 132 ambiguous posts. Each bar represents one post;
     the human distribution (left) is centred around 0.5 with spread
@@ -156,7 +112,7 @@ remainder of this chapter tests.
     Condition & $\bar{H}_{\text{LLM}}$ & $\overline{\textit{abs\_gap}}$
               & $\overline{\text{KL}}$ & Recovery \\
     \midrule
-    Baseline (forced, $T{=}0.7$)         & 0.046 & 0.446 & 2.378 &, \\
+    Baseline (forced, $T{=}0.7$)         & 0.046 & 0.446 & 2.378 & — \\
     High-temperature (forced, $T{=}1.2$) & 0.108 & 0.430 & 2.116 & 10.7\% \\
     Distribution Verbalization (DV)      & 0.553 & 0.233 & 0.216 & 88.3\% \\
     Verbalized Sampling (VS)             & 0.608 & 0.210 & 0.161 & 97.9\% \\
@@ -180,7 +136,7 @@ of pluralism is intact. The fix is a prompt-level change that permits the
 model to express a distribution rather than commit to a single token.
 
 \textbf{H$_{\text{belief}}$ (Belief collapse).} The model's internal
-belief distribution is itself collapsed, reinforcement learning from
+belief distribution is itself collapsed — reinforcement learning from
 human feedback has compressed the probability mass over advice options
 into a single modal answer \citep{kirk-2024-rlhf-diversity}. A
 theoretical mechanism for this compression is the typicality bias
@@ -196,13 +152,13 @@ H$_{\text{decoding}}$ is correct, existing frontier models already
 encode the pluralism that aligned advice requires, and the fix costs
 one line of a prompt. If H$_{\text{belief}}$ is correct, the fix
 requires new preference data, retraining, or architectural changes
-\citep{ouyang-2022-instructgpt}, an enterprise orders of magnitude
+\citep{ouyang-2022-instructgpt} — an enterprise orders of magnitude
 more expensive.
 
 \textit{Diagnostic logic.} Verbalized Sampling provides a clean test
 \citep{zhang-2025-verbalized-sampling}. We ask the model to output a
-probability distribution over the two options, ``P(Option A) = 0.XX,
-P(Option B) = 0.XX'', rather than committing to a single choice. If
+probability distribution over the two options — ``P(Option A) = 0.XX,
+P(Option B) = 0.XX'' — rather than committing to a single choice. If
 H$_{\text{decoding}}$ is true, this format change should allow the model
 to express its full internal distribution, recovering most or all of the
 entropy gap. If H$_{\text{belief}}$ is true, the internal distribution
@@ -228,7 +184,7 @@ explicit P(A) and P(B) tokens; those that summed within [0.90, 1.10]
 were renormalised; those outside that range were logged as parse failures
 and excluded from analysis. The Distribution Verbalization (DV) variant
 asked instead: ``Among advice-givers on /r/\{subreddit\} who saw a post
-like this, what fraction would recommend Option A vs Option B?'', making
+like this, what fraction would recommend Option A vs Option B?'' — making
 the framing descriptive rather than personal, otherwise identical.
 
 \subsection*{Headline results}
@@ -238,14 +194,17 @@ baseline and 0.621 nats for the human reference (see
 \cref{tab:d1_conditions}). The mean absolute gap fell from 0.446 to
 0.210. Recovery, defined as $(H_{\text{VS}} - H_{\text{baseline}}) /
 (H_{\text{human}} - H_{\text{baseline}})$, was 94--101\% across the four
-models (\cref{sec:d1_crossmodel}). The paired bootstrap
-($n{=}525$ post--model pairs, 10\,000 resamplings) gave
+models (\cref{sec:d1_crossmodel}). The result was statistically robust:
+paired bootstrap ($n{=}525$ post--model pairs, 10\,000 resamplings) gave
 $\Delta = -0.235$, 95\% CI $[-0.250, -0.220]$, $p_{\text{fdr}} <
 0.001$.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/fig42_d1_entropy_by_model_condition/out.pdf}
+  %% \includegraphics[width=\linewidth]{figures/fig4_2_entropy_4panel.pdf}
+  \todo{fig 4.2: 4-panel mean entropy per model per condition (baseline,
+    vs, dv, hight) with human reference horizontal dashed line. One
+    panel per model, share y-axis 0--0.7 nats.}
   \caption{Mean LLM entropy per condition for each of the four study
     models. The dashed horizontal line marks human reference entropy
     (0.621 nats). Verbalized Sampling (VS) approaches the human
@@ -254,9 +213,9 @@ $\Delta = -0.235$, 95\% CI $[-0.250, -0.220]$, $p_{\text{fdr}} <
   \label{fig:d1_entropy_panels}
 \end{figure}
 
-This result extends the finding of \citet{zhang-2025-verbalized-sampling},
-who demonstrated entropy recovery on creative writing, joke generation,
-and donation amounts, to binary forced-choice advice on personal
+This result extends the finding of \citet{zhang-2025-verbalized-sampling}
+— who demonstrated entropy recovery on creative writing, joke generation,
+and donation amounts — to binary forced-choice advice on personal
 decisions. The recovery is not only statistically significant but
 practically complete: a model that recovers near-human entropy under VS
 while producing near-zero entropy under forced choice cannot have a
@@ -288,8 +247,8 @@ in its first moment.
 
 Per-cell estimates from VS and DV used $N{=}3$ samples, which is noisier
 than the $N{=}10$ baseline. Across 132 posts and 4 models the aggregate
-comprises 528 cells and 1,584 observations. The pooled estimates are
-stable even though individual cells are noisy.
+comprises 528 cells and 1,584 observations; the pooled signal is robust
+despite per-cell noise.
 
 %% -----------------------------------------------------------------------
 \section{Ruling out temperature}
@@ -297,7 +256,7 @@ stable even though individual cells are noisy.
 
 If the collapse observed at baseline were driven by the low sampling
 temperature, simply raising the temperature should produce entropy
-comparable to VS, but it does not.
+comparable to VS — but it does not.
 
 \subsection*{Design}
 
@@ -308,7 +267,7 @@ distribution under higher stochasticity.
 
 \subsection*{Results}
 
-Pooled across models, high-temperature entropy was 0.108 nats,
+Pooled across models, high-temperature entropy was 0.108 nats —
 0.062 nats above baseline, but 0.500 nats below VS. The mean abs\_gap
 fell only from 0.446 to 0.430. The entropy gain was statistically
 detectable ($\Delta = -0.016$, 95\% CI $[-0.026, -0.005]$,
@@ -319,7 +278,7 @@ lower temperature (0.7 versus 1.2).
 
 The high-temperature effect was, however, strongly heterogeneous across
 models. GPT, Claude, and Llama showed near-zero recovery (mean entropy
-0.066, 0.011, and 0.033 nats respectively, essentially identical to
+0.066, 0.011, and 0.033 nats respectively — essentially identical to
 their baseline values). Mistral was the exception: high-temperature
 entropy reached 0.323 nats, corresponding to 45\% entropy recovery.
 This cross-model heterogeneity has an important implication. Even for
@@ -340,7 +299,7 @@ on the same grounds.
 One might object that a higher temperature still (e.g., $T{=}2.0$) could
 close the remaining gap. This is implausible for two reasons. First, at
 $T{=}1.2$ the parse failure rate for high-temperature forced-choice
-responses was 2.6\%, compared to 0.8\% at baseline, indicating that the
+responses was 2.6\%, compared to 0.8\% at baseline — indicating that the
 format is already beginning to degrade. Higher temperatures produce
 noise rather than pluralism, a qualitatively different phenomenon.
 Second, Mistral at $T{=}1.2$ showed 45\% recovery; VS at $T{=}0.7$
@@ -375,22 +334,22 @@ reference of 0.621 nats throughout.
     Model & Condition & $H_{\text{LLM}}$ & $\overline{\textit{abs\_gap}}$
           & $\overline{\text{KL}}$ & Recovery \\
     \midrule
-    GPT     & Baseline  & 0.070 & 0.428 & 2.193 &, \\
+    GPT     & Baseline  & 0.070 & 0.428 & 2.193 & — \\
             & Hight     & 0.066 & 0.434 & 2.238 & $-0.8\%$ \\
             & DV        & 0.585 & 0.212 & 0.166 & 93.5\% \\
             & VS        & 0.617 & 0.197 & 0.138 & 99.3\% \\
     \midrule
-    Claude  & Baseline  & 0.013 & 0.480 & 2.680 &, \\
+    Claude  & Baseline  & 0.013 & 0.480 & 2.680 & — \\
             & Hight     & 0.011 & 0.484 & 2.690 & $-0.2\%$ \\
             & DV        & 0.506 & 0.264 & 0.292 & 81.1\% \\
             & VS        & 0.586 & 0.227 & 0.180 & 94.2\% \\
     \midrule
-    Mistral & Baseline  & 0.077 & 0.432 & 2.210 &, \\
+    Mistral & Baseline  & 0.077 & 0.432 & 2.210 & — \\
             & Hight     & 0.323 & 0.352 & 1.135 & 45.2\% \\
             & DV        & 0.553 & 0.243 & 0.221 & 87.6\% \\
             & VS        & 0.624 & 0.205 & 0.137 & 100.5\% \\
     \midrule
-    Llama   & Baseline  & 0.026 & 0.444 & 2.429 &, \\
+    Llama   & Baseline  & 0.026 & 0.444 & 2.429 & — \\
             & Hight     & 0.033 & 0.450 & 2.408 & 1.2\% \\
             & DV        & 0.566 & 0.214 & 0.188 & 90.8\% \\
             & VS        & 0.606 & 0.213 & 0.188 & 97.5\% \\
@@ -423,7 +382,7 @@ per-cell sample sizes in future work.
 
 \textit{Claude's 94.2\% recovery was the lowest.} Constitutional AI
 training \citep{bai-2022-constitutional} may produce more prescriptive
-priors, the model is trained to give a single helpful answer, which
+priors — the model is trained to give a single helpful answer, which
 could resist distributional output even when explicitly asked. Claude's
 recovery is, however, still substantially above 90\%, so the
 interpretation remains that decoding is the dominant driver. The precise
@@ -432,12 +391,12 @@ contribution of Constitutional AI is speculative and left for future work.
 The 7.3 percentage-point spread across models (94.2\% to 100.5\%) is
 smaller than the 95\% confidence interval around any individual model's
 estimate; the between-model variation is not statistically distinguishable
-from noise at these sample sizes. The defensible claim is the consistency
+from noise at these sample sizes. The robust claim is the consistency
 across models, not the ordering within the spread \citep{kirk-2024-rlhf-diversity}.
 
 \todo{fig 4.3: per-model VS recovery rates (99, 94, 101, 98 per cent)
-  with 95\% CI from bootstrap, as a four-bar horizontal chart.
-  Optional; include if not redundant with \cref{fig:d1_entropy_panels}.}
+  with 95\% CI from bootstrap, as a four-bar horizontal chart. Optional
+  — include if not redundant with \cref{fig:d1_entropy_panels}.}
 
 %% -----------------------------------------------------------------------
 \section{Interim synthesis and forward link}
@@ -450,8 +409,8 @@ interface-level intervention, but two questions remain open.
 at a small descriptive effect: asking the model to describe community
 preferences (rather than express its own) recovered 88\% versus VS's
 98\%, a 10 percentage-point difference that was statistically significant
-($p_{\text{fdr}} < 0.001$). However, DV changed two things simultaneously,
-the framing of the question and the output format, confounding role
+($p_{\text{fdr}} < 0.001$). However, DV changed two things simultaneously
+— the framing of the question and the output format — confounding role
 with format. Chapter 5 isolates role framing by holding output format
 fixed at single-token forced choice and varying only whether the model is
 cast as a personal advisor, a predictive oracle, or a first-person agent.
@@ -459,26 +418,26 @@ cast as a personal advisor, a predictive oracle, or a first-person agent.
 \textit{Does the finding generalise beyond the ambiguous subset?} The 132
 posts analysed here were filtered to human\_risky\_ratio $\in [0.20,
 0.80]$, by construction the posts where human opinion was most divided.
-Chapter 5 tests role-framing effects across the full 620-post corpus,
+Chapter 5 tests role-framing effects across the full 811-post corpus,
 covering a broader range of consensus levels and providing a more
 general view of the alignment gap.
 
 The decoding-collapse hypothesis is now supported on four independent
-grounds. First, mean entropy rose from 0.046 to 0.608 nats under VS,
+grounds. First, mean entropy rose from 0.046 to 0.608 nats under VS —
 a 13-fold increase with the same underlying model. Second, the recovery
 rate was 94--101\% across four models from different organisations and
 training pipelines. Third, raising sampling temperature from 0.7 to 1.2
 produced only 10.7\% entropy recovery in the same forced-choice format,
 compared to VS's 97.9\% at the lower temperature; the decisive variable
 is the format constraint, not the decoding temperature. Fourth, the
-VS-versus-baseline difference survived multiple-comparison correction
-($p_{\text{fdr}} < 0.001$ after Benjamini-Hochberg
+VS-versus-baseline difference was statistically robust across multiple
+comparison correction ($p_{\text{fdr}} < 0.001$ after Benjamini-Hochberg
 adjustment over 11 comparisons). The belief-collapse hypothesis is
 provisionally rejected for these four models: a model whose internal
 distribution is genuinely collapsed cannot recover near-human entropy
 when a different output format is used.
 
 Having identified output format as the primary lever, we now ask whether
-role framing, a manipulation that holds output format fixed but varies
-the LLM's assigned epistemic role, produces an analogous, additive, or
+role framing — a manipulation that holds output format fixed but varies
+the LLM's assigned epistemic role — produces an analogous, additive, or
 negligible effect.
